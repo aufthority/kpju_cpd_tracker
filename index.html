@@ -450,6 +450,26 @@ ul.doclist li a:hover, ul.doclist li a:focus-visible{
   color:var(--gray-100);
 }
 
+.sheet-section.contacts h3{ color:var(--purple-60); }
+.contacts-note{
+  font-size:13px;
+  line-height:1.5;
+  color:var(--gray-70);
+  margin:0 0 12px;
+}
+ul.contactlist{ margin:0; padding:0; list-style:none; }
+ul.contactlist li{
+  font-size:14px;
+  line-height:1.5;
+  padding:8px 0;
+  border-bottom:1px solid var(--gray-20);
+  color:var(--gray-100);
+}
+ul.contactlist li:last-child{ border-bottom:none; }
+.contact-name{ font-weight:600; }
+ul.contactlist li a{ color:var(--blue-60); text-decoration:underline; }
+ul.contactlist li a:hover, ul.contactlist li a:focus-visible{ color:var(--blue-70); }
+
 .closebtn{
   position:absolute;
   top:20px; right:24px;
@@ -541,6 +561,11 @@ const steps = [
       {label:'TTT certificates', url:null},
       {label:'Trainer profile / CV', url:null},
       {label:'KKM/MMA CPD points application', url:null}
+    ],
+    keyContactsNote:'These are our liaisons at KPJ Healthcare Bhd. — essential for aligning programmes that involve participants from KPJ companies.',
+    keyContacts:[
+      {name:'Nadia', org:'KPJ HQ', email:'snadia@kpjhealth.com.my'},
+      {name:'Suzanne', org:'KPJ HQ', email:'suzanne.rode@kpjhealth.com.my'}
     ]
   },
   {
@@ -875,6 +900,20 @@ function openSheet(step){
             : '';
           return `<li>${linkPart}${contactPart}${notePart}</li>`;
         }).join('')}</ul>
+      </div>
+    `;
+  }
+  if(step.keyContacts && step.keyContacts.length){
+    html += `
+      <div class="sheet-section contacts">
+        <h3>Key contacts</h3>
+        ${step.keyContactsNote ? `<p class="contacts-note">${step.keyContactsNote}</p>` : ''}
+        <ul class="contactlist">${step.keyContacts.map(c=>`
+          <li>
+            <span class="contact-name">${c.name}</span> · ${c.org}
+            · <a href="mailto:${c.email}">${c.email}</a>
+          </li>
+        `).join('')}</ul>
       </div>
     `;
   }
