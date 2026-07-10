@@ -950,18 +950,48 @@ const steps = [
   }
 ];
 
-// ---- Programme index — live from the published Google Sheet CSV ----
-// Expected columns (header-name-driven, so column order/extra columns
-// Expected columns (header-name-driven, so column order/extra columns
-// don't matter): a programme name column, an event date column, and a
-// column holding the direct link to that programme's tracker tab
-// (e.g. https://docs.google.com/spreadsheets/d/.../edit#gid=123456789).
+// ---- Programme index — per CPD year ----
+// Two supported source types per year:
+//   { type:'csv', url:'...' }    — a published Google Sheet CSV that lists
+//                                  multiple programmes (name/date/link columns).
+//                                  Use this when one sheet indexes many
+//                                  programmes' tracker links, like 2027.
+//   { type:'static', programmes:[...] } — a hardcoded list, each entry
+//                                  { name, eventDate, sheetUrl }. Use this
+//                                  when each programme is its own tab within
+//                                  one workbook (no separate index sheet),
+//                                  like 2026 below.
 //
-// One published-CSV source per CPD year. Add a new entry here whenever
-// a new year's tracker sheet is published — no other code changes needed.
-const PROGRAMME_CSV_URLS = {
-  '2026': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxpClIRXPy1wmTx3r-oArwX6s4q_MptPm_D0T2yweF4ZLCp8GeejiTJ_ZyzjhEBD7B_PwhhZc72EZ9/pub?output=csv',
-  '2027': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYJ601A6UyBzOkx2VAvDnSytSnMY-6JbVvMlLYenaip6ycJcDgxsBFcAfZC3ZQZu2y-wRlto1TBRT3/pub?gid=1391415977&single=true&output=csv'
+// 2026 recommended next step: add an "Index" tab to the 2026 workbook with
+// columns ProgramName / EventDate / SheetURL (one row per programme, SheetUrl
+// pointing at that programme's own tab), publish just that tab to CSV, and
+// swap the 2026 entry below to { type:'csv', url:'<that published link>' }.
+// That way adding a future programme is a data edit, not a code edit.
+const SPREADSHEET_2026_ID = '1s9Hbf6FWuE8A9xjrmqYyeKG9FU0Jq-sBj_O5eLCeoss';
+function tabUrl(gid){
+  return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_2026_ID}/edit#gid=${gid}`;
+}
+
+const PROGRAMME_SOURCES = {
+  '2026': {
+    type: 'static',
+    programmes: [
+      { name:'Aseptics',                       eventDate:'11–12 July 2026', sheetUrl: tabUrl('1929190228') },
+      { name:'AMS',                            eventDate:'13–14 July 2026', sheetUrl: tabUrl('1172117635') },
+      { name:'Preceptor',                      eventDate:'25–26 July 2026', sheetUrl: tabUrl('1863567290') },
+      { name:'Cold Chain',                     eventDate:'23 July 2026',    sheetUrl: tabUrl('158531673')  },
+      { name:'Ergonomics Batch 1',             eventDate:'22–23 July 2026', sheetUrl: tabUrl('689093085')  },
+      { name:'Ergonomics Batch 2',             eventDate:'29–30 July 2026', sheetUrl: tabUrl('1185589400') },
+      { name:'Chemical Coordinator Batch 1',   eventDate:'',                sheetUrl: tabUrl('488771677')  },
+      { name:'Chemical Coordinator Batch 2',   eventDate:'',                sheetUrl: tabUrl('1922161909') },
+      { name:'Hospital Hygiene',                eventDate:'',                sheetUrl: tabUrl('1385721581') },
+      { name:'Clinical Frontier',               eventDate:'',                sheetUrl: tabUrl('1323242178') }
+    ]
+  },
+  '2027': {
+    type: 'csv',
+    url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYJ601A6UyBzOkx2VAvDnSytSnMY-6JbVvMlLYenaip6ycJcDgxsBFcAfZC3ZQZu2y-wRlto1TBRT3/pub?gid=1391415977&single=true&output=csv'
+  }
 };
 const DEFAULT_YEAR = '2026';
 
@@ -1046,9 +1076,9 @@ function openSelected(){
 progGo.addEventListener('click', openSelected);
 
 async function loadProgrammeIndex(year){
-  const csvUrl = PROGRAMME_CSV_URLS[year];
-  if(!csvUrl){
-    console.error('No CSV source configured for year:', year);
+  const source = PROGRAMME_SOURCES[year];
+  if(!source){
+    console.error('No programme source configured for year:', year);
     populateDropdown([]);
     setStatus('No programme sheet configured for ' + year + ' yet.', true);
     return;
@@ -1056,8 +1086,20 @@ async function loadProgrammeIndex(year){
 
   setStatus('Loading programme list…');
   populateDropdown([]); // clear stale rows from a previous year while loading
+
+  // Static source: hardcoded list, no network call needed.
+  if(source.type === 'static'){
+    const programmes = source.programmes.filter(p => p.name && p.sheetUrl);
+    populateDropdown(programmes);
+    setStatus(programmes.length
+      ? `${programmes.length} ${year} programme${programmes.length === 1 ? '' : 's'} loaded.`
+      : `No programmes found for ${year} yet.`);
+    return;
+  }
+
+  // CSV source: fetch and parse a published Google Sheet index.
   try{
-    const res = await fetch(csvUrl, { cache:'no-store' });
+    const res = await fetch(source.url, { cache:'no-store' });
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     const rows = parseCSV(text);
