@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CPD Programme Timeline — KPJU School of Pharmacy</title>
+
+<!-- PWA: installable app metadata -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="CPD Tracker">
+<link rel="apple-touch-icon" href="icon_192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon_192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon_512.png">
+
 <style>
 
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -591,6 +603,83 @@ footer.note a:hover, footer.note a:focus-visible{
   color:var(--slate);
 }
 
+/* ---- Install-app banner ---- */
+.install-banner{
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:1100;
+  display:none;
+  align-items:stretch;
+  background:var(--carbon-black);
+  border-bottom:2px solid var(--carbon-black);
+}
+.install-banner.show{ display:flex; }
+
+.install-banner-btn{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  background:none;
+  border:none;
+  color:var(--paper-white);
+  font-family:var(--font-mono);
+  font-size:13px;
+  letter-spacing:0.01em;
+  padding:12px 16px;
+  text-align:center;
+  cursor:pointer;
+  line-height:1.4;
+}
+.install-banner-btn:hover,
+.install-banner-btn:focus-visible{
+  background:var(--voltage-yellow);
+  color:var(--carbon-black);
+  outline:none;
+}
+.install-banner-btn u{
+  text-decoration-color:var(--voltage-yellow);
+  text-underline-offset:3px;
+}
+.install-banner-btn:hover u,
+.install-banner-btn:focus-visible u{
+  text-decoration-color:var(--carbon-black);
+}
+
+.install-banner-close{
+  flex:none;
+  width:44px;
+  border:none;
+  border-left:1px solid var(--slate);
+  background:none;
+  color:var(--paper-white);
+  font-size:18px;
+  line-height:1;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.install-banner-close:hover,
+.install-banner-close:focus-visible{
+  background:var(--voltage-yellow);
+  color:var(--carbon-black);
+  outline:none;
+}
+
+/* Push page content down when the banner is showing, so it doesn't
+   sit underneath the fixed bar. Toggled via JS on <body>. */
+body.has-install-banner .masthead-utility{
+  margin-top:44px;
+}
+@media (max-width:640px){
+  body.has-install-banner .masthead-utility{
+    margin-top:64px;
+  }
+  .install-banner-btn{ font-size:12px; padding:10px 12px; }
+}
+
 /* ---- Telegram CPD Bot floating CTA ---- */
 .cpd-bot-cta{
   position:fixed;
@@ -643,6 +732,13 @@ footer.note a:hover, footer.note a:focus-visible{
 </style>
 </head>
 <body>
+
+<div class="install-banner" id="installBanner">
+  <button class="install-banner-btn" id="installBtn" type="button">
+    <span class="install-banner-text">Install this CPD Tracker as an app on your device. <u>Click here!</u></span>
+  </button>
+  <button class="install-banner-close" id="installBannerClose" type="button" aria-label="Dismiss">&times;</button>
+</div>
 
 <div class="masthead-utility">
   <p class="eyebrow">KPJU School of Pharmacy — CCPD</p>
@@ -1067,6 +1163,82 @@ document.addEventListener('keydown', (e)=>{
     closeSheet();
   }
 });
+
+// ---- PWA: install prompt banner ----
+// Works natively on Chrome/Edge/Android/most desktop browsers via
+// beforeinstallprompt. iOS Safari doesn't fire that event (Apple
+// restriction, no way around it from the web page) — a tap there
+// briefly swaps the banner text to the one manual gesture iOS
+// requires, then reverts.
+(function(){
+  const installBanner = document.getElementById('installBanner');
+  const installBtn = document.getElementById('installBtn');
+  const installBannerClose = document.getElementById('installBannerClose');
+  const installBannerText = installBtn.querySelector('.install-banner-text');
+  const DISMISS_KEY = 'cpdInstallDismissed';
+
+  let deferredPrompt = null;
+  const originalText = installBannerText.innerHTML;
+
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true; // iOS Safari flag
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  const dismissed = localStorage.getItem(DISMISS_KEY) === '1';
+
+  function showBanner(){
+    installBanner.classList.add('show');
+    document.body.classList.add('has-install-banner');
+  }
+  function hideBanner(){
+    installBanner.classList.remove('show');
+    document.body.classList.remove('has-install-banner');
+  }
+
+  if(!isStandalone && !dismissed){
+    // iOS never fires beforeinstallprompt, so show the banner right away;
+    // other platforms show it once the browser signals installability.
+    if(isIOS) showBanner();
+  }
+
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    if(!isStandalone && !dismissed) showBanner();
+  });
+
+  installBtn.addEventListener('click', async ()=>{
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      try{ await deferredPrompt.userChoice; }catch(_){}
+      deferredPrompt = null;
+      hideBanner();
+      return;
+    }
+    if(isIOS){
+      installBannerText.innerHTML = 'Tap the Share icon, then "Add to Home Screen."';
+      setTimeout(()=>{ installBannerText.innerHTML = originalText; }, 4500);
+    }
+  });
+
+  installBannerClose.addEventListener('click', ()=>{
+    hideBanner();
+    localStorage.setItem(DISMISS_KEY, '1');
+  });
+
+  window.addEventListener('appinstalled', ()=>{
+    hideBanner();
+    deferredPrompt = null;
+  });
+})();
+
+// ---- PWA: service worker registration (offline shell + installability) ----
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch((err)=>{
+      console.error('Service worker registration failed:', err);
+    });
+  });
+}
 </script>
 
 </body>
