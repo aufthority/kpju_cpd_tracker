@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CPD Programme Timeline Dashboard Tracker— KPJU School of Pharmacy</title>
+<title>CPD Programme Timeline — KPJU School of Pharmacy</title>
 
 <!-- Link preview (Open Graph / Twitter Card) -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="CPD Programme Timeline Dashboard Tracker— KPJU School of Pharmacy">
-<meta property="og:description" content="A centralised dashboard to plan, track, and follow every CPD programme — start to finish.">
+<meta property="og:title" content="CPD Programme Timeline — KPJU School of Pharmacy">
+<meta property="og:description" content="A centralised dashboard to plan, track and follow every CPD — start to finish.">
 <meta property="og:image" content="https://kpjucpdtracker.vercel.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://kpjucpdtracker.vercel.app/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="CPD Programme Timeline Dashboard Tracker— KPJU School of Pharmacy">
-<meta name="twitter:description" content="A centralised dashboard to plan, track, and follow every CPD programme — start to finish.">
+<meta name="twitter:title" content="CPD Programme Timeline — KPJU School of Pharmacy">
+<meta name="twitter:description" content="A centralised dashboard to plan, track and follow every CPD — start to finish.">
 <meta name="twitter:image" content="https://kpjucpdtracker.vercel.app/og-image.png">
 
 <!-- PWA: installable app metadata -->
@@ -261,6 +261,29 @@ h1{
 }
 .prog-go:hover:not(:disabled){ opacity:0.8; }
 .prog-go:disabled{ background:var(--ash); color:var(--smoke); cursor:not-allowed; }
+
+.prog-photo{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex:none;
+  height:48px;
+  padding:0 var(--sp-24);
+  background:var(--mint-chip);
+  color:var(--carbon-black);
+  border:1.5px solid var(--carbon-black);
+  border-radius:8px;
+  font-family:var(--font-body);
+  font-size:var(--text-body);
+  font-weight:600;
+  letter-spacing:-0.01em;
+  text-decoration:none;
+  cursor:pointer;
+  transition:opacity .12s ease;
+}
+.prog-photo.show{ display:inline-flex; }
+.prog-photo:hover, .prog-photo:focus-visible{ opacity:0.75; outline:none; }
+
 .prog-status{
   display:inline-block;
   margin:var(--sp-16) auto 0;
@@ -810,6 +833,7 @@ body.has-install-banner .masthead-utility{
         </select>
       </div>
       <button class="prog-go" id="progGo" disabled>Open tracker</button>
+      <a class="prog-photo" id="progPhoto" href="#" target="_blank" rel="noopener noreferrer">Upload Event Photos</a>
     </div>
     <p class="prog-status" id="progStatus">Loading programme list…</p>
   </div>
@@ -975,6 +999,15 @@ const steps = [
 //                                  one workbook (no separate index sheet),
 //                                  like 2026 below.
 //
+// Optional per-programme field: photoFolderUrl — a OneDrive/SharePoint
+// folder link for event-day photo uploads. When present, the "Upload Event
+// Photos" button appears automatically once that programme is selected;
+// when absent (not yet created), the button just stays hidden. Add this
+// link whenever a folder is created for a programme — no other code
+// changes needed. For the CSV source type (2027), add a matching column
+// (PhotoFolderURL / PhotoFolder / PhotosURL / EventPhotosURL) and it'll be
+// picked up the same way.
+//
 // 2026 recommended next step: add an "Index" tab to the 2026 workbook with
 // columns ProgramName / EventDate / SheetURL (one row per programme, SheetUrl
 // pointing at that programme's own tab), publish just that tab to CSV, and
@@ -990,7 +1023,7 @@ const PROGRAMME_SOURCES = {
     type: 'static',
     programmes: [
       { name:'Aseptics',                       eventDate:'11–12 July 2026', sheetUrl: tabUrl('1929190228') },
-      { name:'AMS',                            eventDate:'13–14 July 2026', sheetUrl: tabUrl('1172117635') },
+      { name:'AMS',                            eventDate:'13–14 July 2026', sheetUrl: tabUrl('1172117635'), photoFolderUrl:'https://kpjucedumy-my.sharepoint.com/:f:/g/personal/ccpd_kpju_edu_my/IgCIQJP5dvkrRL9g__1jAWxjAZrprJ8jkkuLTXUtX0LvFpM?e=ODNWte' },
       { name:'Preceptor',                      eventDate:'25–26 July 2026', sheetUrl: tabUrl('1863567290') },
       { name:'Cold Chain',                     eventDate:'23 July 2026',    sheetUrl: tabUrl('158531673')  },
       { name:'Ergonomics Batch 1',             eventDate:'22–23 July 2026', sheetUrl: tabUrl('689093085')  },
@@ -1012,7 +1045,13 @@ const timeline = document.getElementById('timeline');
 const yearSelect = document.getElementById('yearSelect');
 const progSelect = document.getElementById('progSelect');
 const progGo = document.getElementById('progGo');
+const progPhoto = document.getElementById('progPhoto');
 const progStatus = document.getElementById('progStatus');
+
+// Keyed by sheetUrl (the dropdown's option value) -> photoFolderUrl, so the
+// "Upload Event Photos" button can look up the right link the moment a
+// programme is selected, without re-fetching anything.
+let programmePhotoMap = {};
 
 yearSelect.value = DEFAULT_YEAR;
 
@@ -1067,19 +1106,36 @@ function populateDropdown(programmes){
   placeholder.textContent = programmes.length ? 'Select a programme…' : 'No programmes found';
   progSelect.appendChild(placeholder);
 
+  programmePhotoMap = {};
   programmes.forEach(p=>{
     const opt = document.createElement('option');
     opt.value = p.sheetUrl;
     opt.textContent = p.eventDate ? `${p.name} — ${p.eventDate}` : p.name;
     progSelect.appendChild(opt);
+    if(p.photoFolderUrl){
+      programmePhotoMap[p.sheetUrl] = p.photoFolderUrl;
+    }
   });
 
   progSelect.disabled = programmes.length === 0;
   progGo.disabled = true;
+  updatePhotoButton();
+}
+
+function updatePhotoButton(){
+  const photoUrl = programmePhotoMap[progSelect.value];
+  if(photoUrl){
+    progPhoto.href = photoUrl;
+    progPhoto.classList.add('show');
+  }else{
+    progPhoto.classList.remove('show');
+    progPhoto.removeAttribute('href');
+  }
 }
 
 progSelect.addEventListener('change', ()=>{
   progGo.disabled = !progSelect.value;
+  updatePhotoButton();
 });
 
 function openSelected(){
@@ -1122,6 +1178,7 @@ async function loadProgrammeIndex(year){
     const nameCol = findCol(headers, ['ProgramName','ProgrammeName','Program','Programme','Name']);
     const dateCol = findCol(headers, ['EventDate','Date','Event']);
     const urlCol  = findCol(headers, ['SheetURL','SheetUrl','TrackerURL','TrackerLink','Link','URL']);
+    const photoCol = findCol(headers, ['PhotoFolderURL','PhotoFolder','PhotosURL','PhotoLink','EventPhotosURL']);
 
     if(nameCol === -1 || urlCol === -1){
       throw new Error('Expected columns (programme name / tracker link) not found in sheet header');
@@ -1131,7 +1188,8 @@ async function loadProgrammeIndex(year){
       .map(r => ({
         name: (r[nameCol] || '').trim(),
         eventDate: dateCol !== -1 ? (r[dateCol] || '').trim() : '',
-        sheetUrl: (r[urlCol] || '').trim()
+        sheetUrl: (r[urlCol] || '').trim(),
+        photoFolderUrl: photoCol !== -1 ? (r[photoCol] || '').trim() : ''
       }))
       .filter(p => p.name && p.sheetUrl);
 
