@@ -200,6 +200,37 @@ h1{
   border-bottom:2px solid var(--slate);
   pointer-events:none;
 }
+
+.year-select-wrap{
+  position:relative;
+  flex:0 0 110px;
+}
+.year-select{
+  width:100%;
+  height:48px;
+  padding:0 36px 0 var(--sp-16);
+  background:var(--carbon-black);
+  border:1.5px solid var(--carbon-black);
+  border-radius:8px;
+  color:var(--paper-white);
+  font-family:var(--font-mono);
+  font-size:var(--text-body-sm);
+  font-weight:500;
+  letter-spacing:0.02em;
+  appearance:none;
+  -webkit-appearance:none;
+  cursor:pointer;
+}
+.year-select-wrap::after{
+  content:'';
+  position:absolute;
+  right:14px; top:50%;
+  width:8px; height:8px;
+  transform:translateY(-65%) rotate(45deg);
+  border-right:2px solid var(--paper-white);
+  border-bottom:2px solid var(--paper-white);
+  pointer-events:none;
+}
 .prog-go{
   flex:none;
   height:48px;
@@ -754,6 +785,12 @@ body.has-install-banner .masthead-utility{
     <h2>Your CPD Programmes</h2>
     <p class="section-sub">Select a programme to open its tracker — see exactly which tasks are done and where it stands.</p>
     <div class="prog-picker">
+      <div class="year-select-wrap">
+        <select class="year-select" id="yearSelect" aria-label="CPD year">
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+        </select>
+      </div>
       <div class="prog-select-wrap">
         <select class="prog-select" id="progSelect" disabled>
           <option value="">Loading programmes…</option>
@@ -915,15 +952,26 @@ const steps = [
 
 // ---- Programme index — live from the published Google Sheet CSV ----
 // Expected columns (header-name-driven, so column order/extra columns
+// Expected columns (header-name-driven, so column order/extra columns
 // don't matter): a programme name column, an event date column, and a
 // column holding the direct link to that programme's tracker tab
 // (e.g. https://docs.google.com/spreadsheets/d/.../edit#gid=123456789).
-const PROGRAMME_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYJ601A6UyBzOkx2VAvDnSytSnMY-6JbVvMlLYenaip6ycJcDgxsBFcAfZC3ZQZu2y-wRlto1TBRT3/pub?gid=1391415977&single=true&output=csv';
+//
+// One published-CSV source per CPD year. Add a new entry here whenever
+// a new year's tracker sheet is published — no other code changes needed.
+const PROGRAMME_CSV_URLS = {
+  '2026': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxpClIRXPy1wmTx3r-oArwX6s4q_MptPm_D0T2yweF4ZLCp8GeejiTJ_ZyzjhEBD7B_PwhhZc72EZ9/pub?output=csv',
+  '2027': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYJ601A6UyBzOkx2VAvDnSytSnMY-6JbVvMlLYenaip6ycJcDgxsBFcAfZC3ZQZu2y-wRlto1TBRT3/pub?gid=1391415977&single=true&output=csv'
+};
+const DEFAULT_YEAR = '2026';
 
 const timeline = document.getElementById('timeline');
+const yearSelect = document.getElementById('yearSelect');
 const progSelect = document.getElementById('progSelect');
 const progGo = document.getElementById('progGo');
 const progStatus = document.getElementById('progStatus');
+
+yearSelect.value = DEFAULT_YEAR;
 
 // RFC 4180-compliant CSV parser: a field is only treated as quoted if
 // the double-quote is the very first character of that field. This
@@ -997,10 +1045,19 @@ function openSelected(){
 }
 progGo.addEventListener('click', openSelected);
 
-async function loadProgrammeIndex(){
+async function loadProgrammeIndex(year){
+  const csvUrl = PROGRAMME_CSV_URLS[year];
+  if(!csvUrl){
+    console.error('No CSV source configured for year:', year);
+    populateDropdown([]);
+    setStatus('No programme sheet configured for ' + year + ' yet.', true);
+    return;
+  }
+
   setStatus('Loading programme list…');
+  populateDropdown([]); // clear stale rows from a previous year while loading
   try{
-    const res = await fetch(PROGRAMME_CSV_URL, { cache:'no-store' });
+    const res = await fetch(csvUrl, { cache:'no-store' });
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     const rows = parseCSV(text);
@@ -1025,8 +1082,8 @@ async function loadProgrammeIndex(){
 
     populateDropdown(programmes);
     setStatus(programmes.length
-      ? `${programmes.length} programme${programmes.length === 1 ? '' : 's'} loaded.`
-      : 'No programmes found in the sheet yet.');
+      ? `${programmes.length} ${year} programme${programmes.length === 1 ? '' : 's'} loaded.`
+      : `No programmes found in the ${year} sheet yet.`);
   }catch(err){
     // Log the technical detail for debugging, but keep the on-screen
     // message plain-language for non-technical staff.
@@ -1036,7 +1093,11 @@ async function loadProgrammeIndex(){
   }
 }
 
-loadProgrammeIndex();
+yearSelect.addEventListener('change', ()=>{
+  loadProgrammeIndex(yearSelect.value);
+});
+
+loadProgrammeIndex(DEFAULT_YEAR);
 
 function typeClass(type){
   if(type==='milestone') return 'milestone';
