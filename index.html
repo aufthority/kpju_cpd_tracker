@@ -808,6 +808,12 @@ body.has-install-banner .masthead-utility{
   }
 }
 
+/* Hide the floating bot CTA while the detail sheet is open, so it can't
+   sit on top of / block the last items in the sheet's content. */
+body.sheet-open .cpd-bot-cta{
+  display:none;
+}
+
 /* ---- Responsive tuning ---- */
 @media (min-width:640px){
   .page{ padding:0 var(--sp-24); }
@@ -1337,6 +1343,7 @@ function openSheet(step, triggerEl){
   sheetInner.innerHTML = html;
   document.getElementById('closeBtn').addEventListener('click', closeSheet);
   scrim.classList.add('open');
+  document.body.classList.add('sheet-open');
   document.body.style.overflow = 'hidden';
   // Move focus into the sheet for keyboard/screen-reader users
   const closeBtnEl = document.getElementById('closeBtn');
@@ -1346,6 +1353,7 @@ function openSheet(step, triggerEl){
 function closeSheet(){
   scrim.classList.remove('open');
   sheet.classList.remove('open');
+  document.body.classList.remove('sheet-open');
   document.body.style.overflow = '';
   if(lastTrigger && typeof lastTrigger.focus === 'function'){
     lastTrigger.focus();
