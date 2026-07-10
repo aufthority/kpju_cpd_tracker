@@ -430,6 +430,25 @@ ul.doclist li a:hover, ul.doclist li a:focus-visible{
   font-size:12px;
   color:var(--blue-60);
 }
+.doc-contact{
+  margin-top:6px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  color:var(--gray-70);
+  line-height:1.6;
+}
+.doc-contact-name{ font-weight:600; color:var(--gray-100); }
+.doc-contact a{ color:var(--gray-70); text-decoration:underline; }
+.doc-contact a:hover, .doc-contact a:focus-visible{ color:var(--blue-60); }
+.doc-note{
+  margin-top:8px;
+  padding:8px 10px;
+  background:var(--red-10);
+  border-left:2px solid var(--red-60);
+  font-size:12px;
+  line-height:1.5;
+  color:var(--gray-100);
+}
 
 .closebtn{
   position:absolute;
@@ -532,6 +551,12 @@ const steps = [
     tasks:['Flyer designed by CITE','Distribute via CCPD / School channels','Obtain management approval','Open registration form (Google Form)','Purchase materials (no pay & claim)'],
     docs:[
       {label:'Flyer', url:null},
+      {
+        label:'Poster/Flyer Design Request (CITE Dept)',
+        url:'https://forms.gle/iScFZp89CPYVdDU4A',
+        contact:{name:'Faizal', role:'CITE Department', phone:'+60 11-6443 1792', email:'ucn.faisal@kpju.edu.my'},
+        note:'After submitting this form, immediately call or email Faizal so CITE can respond quickly.'
+      },
       {label:'Management approval memo', url:null},
       {label:'Registration form / Gform link', url:'https://docs.google.com/forms/d/1gW-DLmOfSSq5e6YRdsdPOUaFTiIUWf7iCTnr2NQYgmY/copy'}
     ]
@@ -546,7 +571,12 @@ const steps = [
       {label:'Participants list', url:null},
       {label:'Registration form (Finance copy)', url:null},
       {label:'HRDC documents (requirement checklist)', url:'https://docs.google.com/document/d/1YOGUlnI_3cXAWGCFXKq68VzFIDDZD8kd/preview'},
-      {label:'Quotation from CCPD', url:null},
+      {
+        label:'Quotation from CCPD',
+        url:null,
+        contact:{name:'Farsana', role:'CCPD Department', phone:'+60 14-303 0830', email:'farsana@kpju.edu.my'},
+        note:'CCPD issues the unique reference number your quotation needs — request it directly from Farsana.'
+      },
       {label:'Trainers profile / CV', url:null},
       {label:'TTT certificates', url:null},
       {label:'Tentative programme', url:'https://docs.google.com/document/d/1IuiZOexyt8LAEnOMSImLiDZx-pUyt8CQ/copy'},
@@ -825,11 +855,22 @@ function openSheet(step){
     html += `
       <div class="sheet-section docs">
         <h3>Documents required</h3>
-        <ul class="doclist">${step.docs.map(d=>
-          d.url
-            ? `<li><a href="${d.url}" target="_blank" rel="noopener">${d.label}<span class="doc-link-icon">&#8599;</span></a></li>`
-            : `<li>${d.label}</li>`
-        ).join('')}</ul>
+        <ul class="doclist">${step.docs.map(d=>{
+          const linkPart = d.url
+            ? `<a href="${d.url}" target="_blank" rel="noopener">${d.label}<span class="doc-link-icon">&#8599;</span></a>`
+            : d.label;
+          const contactPart = d.contact
+            ? `<div class="doc-contact">
+                 <span class="doc-contact-name">${d.contact.name}</span> · ${d.contact.role}
+                 · <a href="tel:${d.contact.phone.replace(/[^+\d]/g,'')}">${d.contact.phone}</a>
+                 · <a href="mailto:${d.contact.email}">${d.contact.email}</a>
+               </div>`
+            : '';
+          const notePart = d.note
+            ? `<div class="doc-note">${d.note}</div>`
+            : '';
+          return `<li>${linkPart}${contactPart}${notePart}</li>`;
+        }).join('')}</ul>
       </div>
     `;
   }
