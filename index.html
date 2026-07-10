@@ -6,352 +6,385 @@
 <title>CPD Programme Timeline — KPJU School of Pharmacy</title>
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root{
-  /* Carbon tokens */
-  --blue-60:#0f62fe;
-  --blue-70:#0043ce;
-  --blue-10:#edf5ff;
-  --gray-100:#161616;
-  --gray-90:#262626;
-  --gray-70:#525252;
-  --gray-60:#6f6f6f;
-  --gray-20:#e0e0e0;
-  --gray-10:#f4f4f4;
-  --white:#ffffff;
-  --red-60:#da1e28;
-  --red-10:#fff1f1;
-  --green-50:#24a148;
-  --green-10:#defbe6;
-  --purple-60:#8a3ffc;
-  --purple-10:#f6f2ff;
+  /* Colors */
+  --carbon-black:#000000;
+  --paper-white:#ffffff;
+  --warm-canvas:#e5e5e5;
+  --mist-gray:#f3f3f3;
+  --ash:#c6c6c6;
+  --smoke:#979797;
+  --slate:#444444;
+  --graphite:#2f2f2f;
+  --mint-chip:#d1ffca;
+  --voltage-yellow:#fff100;
+
+  /* Fonts (no serif anywhere) */
+  --font-display:'Barlow Condensed', ui-sans-serif, system-ui, sans-serif;
+  --font-body:'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Type scale (clamped for laptop/tablet/mobile) */
+  --text-caption: 12px;
+  --text-body-sm: 14px;
+  --text-body: 16px;
+  --text-subheading: 18px;
+  --text-heading-sm: clamp(20px, 3vw, 28px);
+  --text-heading: clamp(26px, 4vw, 40px);
+  --text-heading-lg: clamp(32px, 6vw, 48px);
+  --text-display: clamp(44px, 8vw, 80px);
+
+  /* Spacing */
+  --sp-8:8px; --sp-16:16px; --sp-24:24px; --sp-40:40px; --sp-64:64px; --sp-80:80px;
+
+  --page-max-width: 1280px;
 }
 
 *{ box-sizing:border-box; }
 
 html,body{
   margin:0; padding:0;
-  background:var(--white);
-  color:var(--gray-100);
-  font-family:'IBM Plex Sans', sans-serif;
+  background:var(--warm-canvas);
+  color:var(--carbon-black);
+  font-family:var(--font-body);
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
 }
 
-/* Carbon focus ring */
 :focus-visible{
-  outline:2px solid var(--blue-60);
+  outline:2px solid var(--carbon-black);
   outline-offset:2px;
 }
 
+.sr-only{
+  position:absolute; width:1px; height:1px;
+  padding:0; margin:-1px; overflow:hidden;
+  clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+
 .page{
-  max-width:1000px;
+  max-width:var(--page-max-width);
   margin:0 auto;
   min-height:100vh;
   position:relative;
+  padding:0 var(--sp-16);
 }
 
-header{
-  padding:40px 32px 28px;
-  border-bottom:1px solid var(--gray-20);
-  background:var(--gray-10);
+/* ---- Header: centered masthead, NYT-style structure ---- */
+.masthead-utility{
+  display:flex;
+  justify-content:center;
+  padding:var(--sp-16) 0;
+  border-bottom:1px solid var(--ash);
 }
 
 .eyebrow{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:12px;
-  letter-spacing:0.32px;
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  letter-spacing:0.04em;
   text-transform:uppercase;
-  color:var(--blue-60);
-  margin:0 0 12px;
+  color:var(--slate);
+  margin:0;
   font-weight:500;
 }
 
+header{
+  padding:var(--sp-40) 0 var(--sp-24);
+  text-align:center;
+  position:relative;
+  border-bottom:3px solid var(--carbon-black);
+  margin-bottom:6px;
+}
+header::after{
+  content:'';
+  position:absolute;
+  left:0; right:0;
+  bottom:-6px;
+  height:1px;
+  background:var(--carbon-black);
+}
+
 h1{
-  font-family:'IBM Plex Sans', sans-serif;
-  font-weight:400;
-  font-size:32px;
-  line-height:1.2;
-  letter-spacing:0;
-  margin:0 0 10px;
-  color:var(--gray-100);
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:var(--text-display);
+  line-height:0.92;
+  letter-spacing:-0.01em;
+  text-transform:uppercase;
+  margin:0 0 var(--sp-16);
+  color:var(--carbon-black);
 }
 
 .sub{
-  font-size:14px;
-  color:var(--gray-70);
-  line-height:1.45;
-  margin:0;
+  font-family:var(--font-body);
+  font-size:var(--text-body);
+  color:var(--slate);
+  line-height:1.5;
+  margin:0 auto;
   max-width:56ch;
 }
 
-.legend{
-  display:flex;
-  gap:24px;
-  padding:16px 32px;
-  border-bottom:1px solid var(--gray-20);
-  flex-wrap:wrap;
+/* ---- Section heading pattern (reused for Launcher + Timeline heading) ---- */
+.section-block{
+  padding:var(--sp-24) 0;
+  border-top:1px solid var(--ash);
+  text-align:center;
 }
-.legend-item{
-  display:flex; align-items:center; gap:8px;
-  font-family:'IBM Plex Mono', monospace;
-  font-size:12px;
-  color:var(--gray-70);
-  letter-spacing:0.16px;
+.section-block h2{
+  font-family:var(--font-body);
+  font-size:var(--text-heading-sm);
+  font-weight:600;
+  letter-spacing:-0.02em;
+  text-transform:uppercase;
+  color:var(--carbon-black);
+  margin:0 0 var(--sp-8);
+  line-height:1.2;
 }
-.legend-swatch{ width:10px; height:10px; flex:none; }
-.legend-swatch.duration{ background:var(--blue-60); }
-.legend-swatch.deadline{ background:var(--red-60); }
-.legend-swatch.event{ background:var(--green-50); }
-.legend-swatch.post{ background:var(--purple-60); }
+.section-block .section-sub{
+  font-family:var(--font-body);
+  font-size:var(--text-body-sm);
+  color:var(--slate);
+  margin:0 auto var(--sp-16);
+  max-width:80ch;
+  line-height:1.5;
+}
 
 /* ---- Programme launcher ---- */
-.launcher{
-  padding:24px 32px 28px;
-  border-bottom:1px solid var(--gray-20);
-}
-.launcher h2{
-  font-family:'IBM Plex Sans', sans-serif;
-  font-size:14px;
-  font-weight:600;
-  letter-spacing:0.16px;
-  text-transform:uppercase;
-  color:var(--gray-70);
-  margin:0 0 4px;
-}
-.launcher .launcher-sub{
-  font-size:13px;
-  color:var(--gray-60);
-  margin:0 0 16px;
-}
 .prog-picker{
   display:flex;
-  gap:8px;
+  gap:var(--sp-8);
   flex-wrap:wrap;
+  justify-content:center;
 }
 .prog-select-wrap{
   position:relative;
-  flex:1 1 280px;
+  flex:0 1 380px;
   min-width:220px;
 }
 .prog-select{
   width:100%;
-  height:44px;
-  padding:0 40px 0 12px;
-  background:var(--gray-10);
-  border:none;
-  border-bottom:1px solid var(--gray-70);
-  color:var(--gray-100);
-  font-family:'IBM Plex Sans', sans-serif;
-  font-size:14px;
+  height:48px;
+  padding:0 40px 0 var(--sp-16);
+  background:var(--paper-white);
+  border:1.5px solid var(--ash);
+  border-radius:8px;
+  color:var(--carbon-black);
+  font-family:var(--font-body);
+  font-size:var(--text-body);
   appearance:none;
   -webkit-appearance:none;
   cursor:pointer;
 }
-.prog-select:disabled{ color:var(--gray-60); cursor:not-allowed; }
+.prog-select:disabled{ color:var(--smoke); cursor:not-allowed; background:var(--mist-gray); }
 .prog-select-wrap::after{
   content:'';
   position:absolute;
-  right:14px; top:50%;
-  width:10px; height:10px;
-  transform:translateY(-60%) rotate(45deg);
-  border-right:2px solid var(--gray-70);
-  border-bottom:2px solid var(--gray-70);
+  right:16px; top:50%;
+  width:9px; height:9px;
+  transform:translateY(-65%) rotate(45deg);
+  border-right:2px solid var(--slate);
+  border-bottom:2px solid var(--slate);
   pointer-events:none;
 }
 .prog-go{
   flex:none;
-  height:44px;
-  padding:0 20px;
-  background:var(--blue-60);
-  color:var(--white);
+  height:48px;
+  padding:0 var(--sp-24);
+  background:var(--carbon-black);
+  color:var(--paper-white);
   border:none;
-  font-family:'IBM Plex Sans', sans-serif;
-  font-size:14px;
-  font-weight:500;
-  letter-spacing:0.16px;
-  cursor:pointer;
-  transition:background .12s ease;
-}
-.prog-go:hover:not(:disabled){ background:var(--blue-70); }
-.prog-go:disabled{ background:var(--gray-20); color:var(--gray-60); cursor:not-allowed; }
-.prog-status{
-  margin:10px 0 0;
-  font-family:'IBM Plex Mono', monospace;
-  font-size:12px;
-  color:var(--gray-60);
-}
-.prog-status.is-error{ color:var(--red-60); }
-
-/* ---- Timeline section heading ---- */
-.timeline-heading{
-  padding:24px 32px 0;
-}
-.timeline-heading h2{
-  font-family:'IBM Plex Sans', sans-serif;
-  font-size:14px;
+  border-radius:8px;
+  font-family:var(--font-body);
+  font-size:var(--text-body);
   font-weight:600;
-  letter-spacing:0.16px;
-  text-transform:uppercase;
-  color:var(--gray-70);
-  margin:0 0 4px;
+  letter-spacing:-0.01em;
+  cursor:pointer;
+  transition:opacity .12s ease;
 }
-.timeline-heading p{
-  font-size:13px;
-  color:var(--gray-60);
-  margin:0;
-  max-width:60ch;
-  line-height:1.5;
-}
-
-/* ---- Timeline ---- */
-
-.timeline{
+.prog-go:hover:not(:disabled){ opacity:0.8; }
+.prog-go:disabled{ background:var(--ash); color:var(--smoke); cursor:not-allowed; }
+.prog-status{
+  display:inline-block;
+  margin:var(--sp-16) auto 0;
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  color:var(--smoke);
+  padding-left:14px;
   position:relative;
-  padding:44px 24px 40px;
 }
-
-.spine-svg{
-  position:absolute;
-  top:0; left:0;
-  pointer-events:none;
-  z-index:0;
-  display:none;
+.prog-status.is-error{
+  color:var(--carbon-black);
 }
-
-/* Mobile-first: single column, stacked left rail */
-.titem{
-  position:relative;
-  padding-left:44px;
-  margin-bottom:36px;
-  z-index:2;
-}
-
-.timeline::before{
+.prog-status.is-error::before{
   content:'';
   position:absolute;
-  left:31px;
-  top:48px;
-  bottom:20px;
-  width:2px;
-  background:var(--gray-20);
-  z-index:0;
+  left:0; top:4px;
+  width:8px; height:8px;
+  background:var(--voltage-yellow);
+  border:1px solid var(--carbon-black);
 }
+
+/* ---- Legend ---- */
+.legend{
+  display:flex;
+  gap:var(--sp-24);
+  padding:var(--sp-16) 0;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.legend-item{
+  display:flex; align-items:center; gap:8px;
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  color:var(--slate);
+  letter-spacing:-0.01em;
+}
+.legend-swatch{ width:12px; height:12px; flex:none; border-radius:3px; }
+.legend-swatch.duration{ background:var(--ash); }
+.legend-swatch.deadline{ background:var(--voltage-yellow); border:1px solid var(--carbon-black); }
+.legend-swatch.event{ background:var(--mint-chip); }
+.legend-swatch.post{ background:var(--carbon-black); }
+
+/* ---- Timeline: stacked list on mobile/tablet, snake flow on laptop ---- */
+.timeline{
+  padding:var(--sp-24) 0 var(--sp-40);
+  display:flex;
+  flex-direction:column;
+  gap:var(--sp-24);
+  position:relative;
+}
+
+.titem{
+  position:relative;
+  padding-left:28px;
+}
+.titem::before{
+  /* connecting rail segment */
+  content:'';
+  position:absolute;
+  left:5px; top:24px; bottom:-24px;
+  width:2px;
+  background:var(--ash);
+}
+.titem:last-child::before{ display:none; }
 
 .tmarker{
   position:absolute;
-  left:24px; top:2px;
-  width:14px; height:14px;
-  background:var(--white);
-  border:2px solid var(--blue-60);
+  left:0; top:6px;
+  width:12px; height:12px;
+  border-radius:3px;
+  background:var(--paper-white);
+  border:2px solid var(--ash);
   z-index:2;
-  transition:transform .12s ease;
 }
-.tmarker.milestone{ border-color:var(--red-60); background:var(--red-60); }
-.tmarker.event{ border-color:var(--green-50); background:var(--green-50); width:16px; height:16px; left:23px; }
-.tmarker.post{ border-color:var(--purple-60); background:var(--purple-60); }
+.tmarker.milestone{ border-color:var(--carbon-black); background:var(--voltage-yellow); }
+.tmarker.event{ border-color:var(--carbon-black); background:var(--mint-chip); }
+.tmarker.post{ border-color:var(--carbon-black); background:var(--carbon-black); }
 
 .tcard{
-  cursor:pointer;
+  display:flex;
+  align-items:stretch;
+  width:100%;
   text-align:left;
-  border-left:1px solid transparent;
-  padding-left:14px;
-  margin-left:-14px;
-  transition:border-color .12s ease, background .12s ease;
-}
-.tcard:hover, .tcard:focus-visible{
-  background:var(--blue-10);
-  border-left-color:var(--blue-60);
+  cursor:pointer;
+  background:var(--paper-white);
+  border:none;
+  border-radius:0;
+  padding:0;
+  transition:transform .1s ease;
+  font:inherit;
+  color:inherit;
+  overflow:hidden;
 }
 
-.phase-label{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:12px;
-  letter-spacing:0.32px;
-  text-transform:uppercase;
-  color:var(--blue-60);
-  margin-bottom:4px;
-  font-weight:500;
+.tcard:hover, .tcard:focus-visible{ transform:translateY(-2px); }
+
+.tcard-flag{
+  flex:0 0 34%;
+  max-width:170px;
+  background:var(--ash);
+  color:var(--carbon-black);
+  padding:var(--sp-16);
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
 }
-.phase-label.milestone-label{ color:var(--red-60); }
-.phase-label.event-label{ color:var(--green-50); }
-.phase-label.post-label{ color:var(--purple-60); }
+.tcard.milestone .tcard-flag{ background:var(--voltage-yellow); }
+.tcard.event .tcard-flag{ background:var(--mint-chip); }
+.tcard.post .tcard-flag{ background:var(--carbon-black); color:var(--paper-white); }
+
+.flag-step{
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  text-transform:uppercase;
+  letter-spacing:0.02em;
+  margin-bottom:8px;
+}
+
+.flag-type{
+  font-family:var(--font-body);
+  font-size:var(--text-body-sm);
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:-0.01em;
+  line-height:1.2;
+}
+
+.tcard-body{
+  flex:1;
+  min-width:0;
+  padding:var(--sp-16) var(--sp-24);
+}
+@media (min-width:640px){
+  .tcard-flag, .tcard-body{ padding:var(--sp-24); }
+}
 
 .node-title{
-  font-family:'IBM Plex Sans', sans-serif;
-  font-size:20px;
-  font-weight:500;
-  color:var(--gray-100);
-  line-height:1.3;
+  font-family:var(--font-body);
+  font-size:var(--text-heading);
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:-0.02em;
+  color:var(--carbon-black);
+  line-height:1.1;
+  margin:0 0 4px;
 }
 
 .node-window{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:12px;
-  color:var(--gray-60);
-  margin-top:4px;
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  color:var(--smoke);
+  margin:0 0 var(--sp-16);
 }
 
 .node-teaser{
-  font-size:13px;
-  color:var(--gray-70);
-  margin-top:8px;
+  font-family:var(--font-body);
+  font-size:var(--text-body-sm);
+  color:var(--slate);
   line-height:1.5;
-  max-width:42ch;
+  margin:0 0 var(--sp-16);
+  max-width:60ch;
 }
 
 .node-cta{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:11px;
-  letter-spacing:0.16px;
-  color:var(--blue-60);
-  margin-top:10px;
-  opacity:0.85;
-}
-.tcard:hover .node-cta, .tcard:focus-visible .node-cta{ opacity:1; text-decoration:underline; }
-
-/* ---- Desktop: alternating structured layout ---- */
-@media (min-width:800px){
-  .timeline{ padding:56px 8px 40px; }
-  .timeline::before{ display:none; }
-  .spine-svg{ display:block; }
-
-  .titem{
-    width:44%;
-    padding-left:0;
-    margin-bottom:56px;
-  }
-  .titem[data-side="left"]{
-    margin-right:56%;
-    text-align:right;
-  }
-  .titem[data-side="right"]{
-    margin-left:56%;
-    text-align:left;
-  }
-  .titem[data-side="left"] .tmarker{ left:auto; right:-8px; top:2px; }
-  .titem[data-side="right"] .tmarker{ left:-8px; top:2px; }
-
-  .titem[data-side="left"] .tcard{
-    border-left:none; border-right:1px solid transparent;
-    padding-left:0; padding-right:14px; margin-left:0; margin-right:-14px;
-  }
-  .titem[data-side="left"] .tcard:hover, .titem[data-side="left"] .tcard:focus-visible{
-    border-right-color:var(--blue-60);
-  }
-  .node-teaser{ margin-left:auto; margin-right:0; }
-  .titem[data-side="right"] .node-teaser{ margin-left:0; margin-right:auto; }
-  .titem[data-side="left"] .node-cta{ margin-left:auto; margin-right:0; }
-  .titem[data-side="right"] .node-cta{ margin-left:0; margin-right:auto; }
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  letter-spacing:-0.01em;
+  text-transform:uppercase;
+  color:var(--carbon-black);
+  font-weight:500;
+  text-decoration:underline;
+  text-underline-offset:3px;
 }
 
-/* ---- Bottom sheet (Carbon panel: sharp corners, hairline border) ---- */
+/* ---- Bottom sheet ---- */
 
 .scrim{
   position:fixed;
   inset:0;
-  background:rgba(22,22,22,0.55);
+  background:rgba(0,0,0,0.55);
   opacity:0;
   pointer-events:none;
   transition:opacity .15s ease;
@@ -362,189 +395,222 @@ h1{
 .sheet{
   position:fixed;
   left:0; right:0; bottom:0;
-  max-width:680px;
+  max-width:720px;
   margin:0 auto;
-  background:var(--white);
-  border-top:2px solid var(--blue-60);
+  background:var(--paper-white);
+  border-radius:32px 32px 0 0;
+  border-top:6px solid var(--ash);
   transform:translateY(100%);
   transition:transform .22s cubic-bezier(0.2,0,0.38,0.9);
   z-index:11;
-  max-height:84vh;
+  max-height:86vh;
   overflow-y:auto;
 }
 .sheet.open{ transform:translateY(0); }
+.sheet.milestone{ border-top-color:var(--voltage-yellow); }
+.sheet.event{ border-top-color:var(--mint-chip); }
+.sheet.post{ border-top-color:var(--carbon-black); }
 
-.sheet-inner{ padding:28px 32px 40px; position:relative; }
-
-.sheet-eyebrow{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:12px;
-  letter-spacing:0.32px;
-  text-transform:uppercase;
-  font-weight:500;
+.sheet-inner{ padding:var(--sp-24) var(--sp-24) var(--sp-40); position:relative; }
+@media (min-width:640px){
+  .sheet-inner{ padding:var(--sp-40) var(--sp-40) var(--sp-64); }
 }
 
+.tag{
+  display:inline-block;
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  letter-spacing:-0.01em;
+  text-transform:uppercase;
+  font-weight:500;
+  padding:6px 14px;
+  border-radius:64px;
+  background:var(--ash);
+  color:var(--carbon-black);
+}
+.tag.milestone{ background:var(--voltage-yellow); }
+.tag.event{ background:var(--mint-chip); }
+.tag.post{ background:var(--carbon-black); color:var(--paper-white); }
+
+.sheet-eyebrow.tag{ margin-bottom:var(--sp-16); }
+
 .sheet-title{
-  font-family:'IBM Plex Sans', sans-serif;
-  font-size:28px;
-  font-weight:400;
-  margin:8px 0 4px;
-  color:var(--gray-100);
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:var(--text-heading-lg);
+  text-transform:uppercase;
+  line-height:0.95;
+  letter-spacing:-0.02em;
+  margin:0 0 4px;
+  color:var(--carbon-black);
 }
 
 .sheet-window{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:13px;
-  color:var(--gray-60);
-  margin-bottom:20px;
+  font-family:var(--font-mono);
+  font-size:var(--text-body-sm);
+  color:var(--smoke);
+  margin-bottom:var(--sp-24);
 }
 
-.sheet-section{ margin-top:24px; }
+.sheet-section{ margin-top:var(--sp-24); }
 
 .sheet-section h3{
-  font-family:'IBM Plex Sans', sans-serif;
-  font-size:12px;
+  font-family:var(--font-body);
+  font-size:var(--text-body);
   font-weight:600;
-  letter-spacing:0.32px;
+  letter-spacing:-0.01em;
   text-transform:uppercase;
-  color:var(--blue-60);
-  margin:0 0 12px;
+  color:var(--carbon-black);
+  margin:0 0 var(--sp-16);
   padding-bottom:8px;
-  border-bottom:1px solid var(--gray-20);
+  border-bottom:1.5px solid var(--carbon-black);
 }
-.sheet-section.docs h3{ color:var(--red-60); }
-.sheet-section.post h3{ color:var(--purple-60); }
 
 .sheet-section p.overview{
-  font-size:15px;
+  font-size:var(--text-subheading);
   line-height:1.6;
-  color:var(--gray-100);
+  color:var(--carbon-black);
   margin:0;
 }
 
-ul.tasklist, ul.doclist{ margin:0; padding:0; list-style:none; }
-ul.tasklist li, ul.doclist li{
-  font-size:14px;
+ul.tasklist, ul.doclist, ul.contactlist{ margin:0; padding:0; list-style:none; }
+ul.tasklist li, ul.doclist li, ul.contactlist li{
+  font-size:var(--text-body);
   line-height:1.5;
-  padding:10px 0 10px 26px;
+  padding:12px 0 12px 26px;
   position:relative;
-  border-bottom:1px solid var(--gray-20);
-  color:var(--gray-100);
+  border-bottom:1px solid var(--ash);
+  color:var(--carbon-black);
 }
-ul.tasklist li:last-child, ul.doclist li:last-child{ border-bottom:none; }
+ul.tasklist li:last-child, ul.doclist li:last-child, ul.contactlist li:last-child{ border-bottom:none; }
 ul.tasklist li::before{
   content:'';
   position:absolute;
-  left:2px; top:17px;
+  left:2px; top:19px;
   width:8px; height:8px;
-  background:var(--blue-60);
+  background:var(--carbon-black);
 }
 ul.doclist li::before{
   content:'';
   position:absolute;
-  left:0; top:12px;
+  left:0; top:14px;
   width:12px; height:15px;
-  border:1.5px solid var(--red-60);
+  border:1.5px solid var(--carbon-black);
   border-top:none;
 }
 
 ul.doclist li a{
-  color:var(--blue-60);
+  color:var(--carbon-black);
   text-decoration:none;
-  font-weight:500;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
+  font-weight:600;
+  background-image:linear-gradient(var(--mint-chip), var(--mint-chip));
+  background-repeat:no-repeat;
+  background-size:100% 0;
+  background-position:0 100%;
+  transition:background-size .12s ease;
+  padding:2px 0;
 }
 ul.doclist li a:hover, ul.doclist li a:focus-visible{
-  text-decoration:underline;
-}
-.doc-link-icon{
-  font-size:12px;
-  color:var(--blue-60);
+  background-size:100% 100%;
 }
 .doc-contact{
-  margin-top:6px;
-  font-family:'IBM Plex Mono', monospace;
-  font-size:11px;
-  color:var(--gray-70);
+  margin-top:8px;
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  color:var(--slate);
   line-height:1.6;
 }
-.doc-contact-name{ font-weight:600; color:var(--gray-100); }
-.doc-contact a{ color:var(--gray-70); text-decoration:underline; }
-.doc-contact a:hover, .doc-contact a:focus-visible{ color:var(--blue-60); }
+.doc-contact-name{ font-weight:600; color:var(--carbon-black); }
+.doc-contact a{ color:var(--slate); text-decoration:underline; }
+.doc-contact a:hover, .doc-contact a:focus-visible{ color:var(--carbon-black); }
 .doc-note{
-  margin-top:8px;
-  padding:8px 10px;
-  background:var(--red-10);
-  border-left:2px solid var(--red-60);
-  font-size:12px;
+  margin-top:10px;
+  padding:10px 12px;
+  background:#fffce0;
+  border-left:3px solid var(--voltage-yellow);
+  font-size:var(--text-body-sm);
   line-height:1.5;
-  color:var(--gray-100);
+  color:var(--carbon-black);
+  border-radius:0 6px 6px 0;
 }
 
-.sheet-section.contacts h3{ color:var(--purple-60); }
 .contacts-note{
-  font-size:13px;
+  font-size:var(--text-body-sm);
   line-height:1.5;
-  color:var(--gray-70);
-  margin:0 0 12px;
+  color:var(--slate);
+  margin:0 0 var(--sp-16);
 }
-ul.contactlist{ margin:0; padding:0; list-style:none; }
-ul.contactlist li{
-  font-size:14px;
-  line-height:1.5;
-  padding:8px 0;
-  border-bottom:1px solid var(--gray-20);
-  color:var(--gray-100);
-}
-ul.contactlist li:last-child{ border-bottom:none; }
 .contact-name{ font-weight:600; }
-ul.contactlist li a{ color:var(--blue-60); text-decoration:underline; }
-ul.contactlist li a:hover, ul.contactlist li a:focus-visible{ color:var(--blue-70); }
+ul.contactlist li a{ color:var(--carbon-black); text-decoration:underline; text-underline-offset:2px; }
+ul.contactlist li a:hover, ul.contactlist li a:focus-visible{ color:var(--slate); }
 
 .closebtn{
   position:absolute;
-  top:20px; right:24px;
-  width:32px; height:32px;
-  border:1px solid var(--gray-20);
-  background:var(--white);
-  color:var(--gray-70);
+  top:var(--sp-24); right:var(--sp-24);
+  width:36px; height:36px;
+  border:1.5px solid var(--carbon-black);
+  border-radius:8px;
+  background:var(--paper-white);
+  color:var(--carbon-black);
   font-size:18px;
+  line-height:1;
   cursor:pointer;
   display:flex; align-items:center; justify-content:center;
 }
-.closebtn:hover{ background:var(--gray-10); border-color:var(--blue-60); color:var(--blue-60); }
+.closebtn:hover{ background:var(--carbon-black); color:var(--paper-white); }
 
+/* ---- Footer: plain centered text on canvas ---- */
 footer.note{
-  padding:20px 32px;
-  font-size:11px;
-  color:var(--gray-60);
-  border-top:1px solid var(--gray-20);
-  font-family:'IBM Plex Mono', monospace;
-  letter-spacing:0.16px;
+  margin-top:var(--sp-40);
+  padding:var(--sp-24) 0;
+  font-size:var(--text-caption);
+  color:var(--slate);
+  font-family:var(--font-mono);
+  letter-spacing:-0.01em;
+  border-top:1px solid var(--ash);
+  text-align:center;
+}
+footer.note .footer-inner{
+  max-width:var(--page-max-width);
+  margin:0 auto;
+  padding:0 var(--sp-16);
 }
 footer.note a{
-  color:var(--blue-60);
+  color:var(--carbon-black);
   text-decoration:underline;
+  text-underline-offset:2px;
 }
 footer.note a:hover, footer.note a:focus-visible{
-  color:var(--blue-70);
+  color:var(--slate);
+}
+
+/* ---- Responsive tuning ---- */
+@media (min-width:640px){
+  .page{ padding:0 var(--sp-24); }
+}
+@media (min-width:900px){
+  .page{ padding:0 var(--sp-40); }
+}
+@media (min-width:1280px){
+  .page{ padding:0 var(--sp-64); }
 }
 </style>
 </head>
 <body>
 
+<div class="masthead-utility">
+  <p class="eyebrow">KPJU School of Pharmacy — CCPD</p>
+</div>
+
 <div class="page">
   <header>
-    <p class="eyebrow">KPJU School of Pharmacy — CCPD</p>
     <h1>CPD Programme Timeline</h1>
     <p class="sub">Select a stage to view its overview, required tasks, and documents — from first planning through to event day.</p>
   </header>
 
-  <div class="launcher">
+  <div class="section-block">
     <h2>Your CPD Programmes</h2>
-    <p class="launcher-sub">Select a programme to open its tracker — see exactly which tasks are done and where it stands.</p>
+    <p class="section-sub">Select a programme to open its tracker — see exactly which tasks are done and where it stands.</p>
     <div class="prog-picker">
       <div class="prog-select-wrap">
         <select class="prog-select" id="progSelect" disabled>
@@ -563,16 +629,16 @@ footer.note a:hover, footer.note a:focus-visible{
     <div class="legend-item"><span class="legend-swatch post"></span>Post-event follow-up</div>
   </div>
 
-  <div class="timeline-heading">
+  <div class="section-block">
     <h2>Programme Lifecycle Reference</h2>
-    <p>A general guide to how every CPD programme moves through CCPD, from planning to close-out. Tap any stage below for its overview, tasks, and documents. This reference doesn't change based on the programme selected above — for a specific programme's live status, open its tracker.</p>
+    <p class="section-sub">A general guide to how every CPD programme moves through CCPD, from planning to close-out. Select any stage below for its overview, tasks, and documents. This reference doesn't change based on the programme selected above — for a specific programme's live status, open its tracker.</p>
   </div>
 
-  <div class="timeline" id="timeline">
-    <svg class="spine-svg" id="spineSvg"></svg>
-  </div>
+  <div class="timeline" id="timeline"></div>
 
-  <footer class="note">Built by <a href="https://www.aufthority.com/" target="_blank" rel="noopener">Aufthority</a>, 2026 for School of Pharmacy, CPD Committee, KPJ Healthcare University</footer>
+  <footer class="note">
+    <div class="footer-inner">Built by <a href="https://www.aufthority.com/" target="_blank" rel="noopener">Aufthority</a>, 2026 for School of Pharmacy, CPD Committee, KPJ Healthcare University</div>
+  </footer>
 </div>
 
 <div class="scrim" id="scrim"></div>
@@ -820,89 +886,37 @@ async function loadProgrammeIndex(){
 
 loadProgrammeIndex();
 
-function labelClass(type){
-  if(type==='milestone') return 'milestone-label';
-  if(type==='event') return 'event-label';
-  if(type==='post') return 'post-label';
-  return '';
-}
-function markerClass(type){
+function typeClass(type){
   if(type==='milestone') return 'milestone';
   if(type==='event') return 'event';
   if(type==='post') return 'post';
   return '';
 }
 
-steps.forEach((step, i)=>{
-  const side = i % 2 === 0 ? 'left' : 'right';
+steps.forEach((step)=>{
+  const cls = typeClass(step.type);
+  const phaseParts = step.phase.split('·').map(s=>s.trim());
   const item = document.createElement('div');
   item.className = 'titem';
-  item.dataset.side = side;
   item.innerHTML = `
-    <div class="tmarker ${markerClass(step.type)}"></div>
-    <div class="tcard" tabindex="0" role="button" aria-label="${step.title}, tap for details">
-      <div class="phase-label ${labelClass(step.type)}">${step.phase}</div>
-      <div class="node-title">${step.title}</div>
-      <div class="node-window">${step.window}</div>
-      <div class="node-teaser">${step.teaser}</div>
-      <div class="node-cta">Tap for details →</div>
-    </div>
+    <div class="tmarker ${cls}"></div>
+    <button class="tcard ${cls}" type="button" aria-label="${step.title}, view details">
+      <span class="tcard-flag">
+        <span class="flag-step">${phaseParts[0]}</span>
+        ${phaseParts[1] ? `<span class="flag-type">${phaseParts[1]}</span>` : ''}
+      </span>
+      <span class="tcard-body">
+        <h3 class="node-title">${step.title}</h3>
+        <p class="node-window">${step.window}</p>
+        <p class="node-teaser">${step.teaser}</p>
+        <span class="node-cta">View details</span>
+      </span>
+    </button>
   `;
   const card = item.querySelector('.tcard');
   card.addEventListener('click', ()=>openSheet(step, card));
-  card.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openSheet(step, card); } });
   timeline.appendChild(item);
 });
-
-// ---- Orthogonal connector (Carbon-style circuit trace, right angles only) ----
-function resolveVar(name){
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-}
-
-function drawSpine(){
-  const svg = document.getElementById('spineSvg');
-  const isDesktop = window.matchMedia('(min-width:800px)').matches;
-  if(!isDesktop){
-    svg.innerHTML = '';
-    return;
-  }
-  const rect = timeline.getBoundingClientRect();
-  svg.setAttribute('width', rect.width);
-  svg.setAttribute('height', rect.height);
-  svg.innerHTML = '';
-
-  const markers = Array.from(timeline.querySelectorAll('.tmarker'));
-  const pts = markers.map(d=>{
-    const r = d.getBoundingClientRect();
-    return { x: r.left + r.width/2 - rect.left, y: r.top + r.height/2 - rect.top };
-  });
-
-  const colorMap = { band: resolveVar('--blue-60'), milestone: resolveVar('--red-60'), event: resolveVar('--green-50'), post: resolveVar('--purple-60') };
-
-  for(let i=0;i<pts.length-1;i++){
-    const a = pts[i], b = pts[i+1];
-    const midY = (a.y + b.y)/2;
-    const targetType = steps[i+1].type;
-    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d', `M ${a.x} ${a.y} L ${a.x} ${midY} L ${b.x} ${midY} L ${b.x} ${b.y}`);
-    path.setAttribute('stroke', colorMap[targetType] || colorMap.band);
-    path.setAttribute('fill','none');
-    path.setAttribute('stroke-width','2');
-    if(targetType === 'milestone'){ path.setAttribute('stroke-dasharray','4 4'); }
-    svg.appendChild(path);
-  }
-}
-
-let resizeTimer;
-window.addEventListener('resize', ()=>{
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(drawSpine, 100);
-});
-window.addEventListener('load', drawSpine);
-if(document.fonts && document.fonts.ready){
-  document.fonts.ready.then(drawSpine);
-}
-setTimeout(drawSpine, 50);
 
 // ---- Sheet logic ----
 const scrim = document.getElementById('scrim');
@@ -912,12 +926,14 @@ let lastTrigger = null; // element to restore focus to on close
 
 function openSheet(step, triggerEl){
   lastTrigger = triggerEl || null;
-  const color = step.type==='milestone' ? 'var(--red-60)' : step.type==='event' ? 'var(--green-50)' : step.type==='post' ? 'var(--purple-60)' : 'var(--blue-60)';
+  const cls = typeClass(step.type);
+  sheet.className = 'sheet open ' + cls;
+
   let html = `
     <button class="closebtn" id="closeBtn" aria-label="Close">&times;</button>
-    <div class="sheet-eyebrow" style="color:${color}">${step.phase}</div>
-    <div class="sheet-title" id="sheetTitleLive">${step.title}</div>
-    <div class="sheet-window">${step.window}</div>
+    <span class="tag ${cls} sheet-eyebrow">${step.phase}</span>
+    <h2 class="sheet-title" id="sheetTitleLive">${step.title}</h2>
+    <p class="sheet-window">${step.window}</p>
     <div class="sheet-section">
       <h3>Overview</h3>
       <p class="overview">${step.overview}</p>
@@ -937,7 +953,7 @@ function openSheet(step, triggerEl){
         <h3>Documents required</h3>
         <ul class="doclist">${step.docs.map(d=>{
           const linkPart = d.url
-            ? `<a href="${d.url}" target="_blank" rel="noopener">${d.label}<span class="doc-link-icon">&#8599;</span></a>`
+            ? `<a href="${d.url}" target="_blank" rel="noopener">${d.label}<span class="sr-only"> (opens in a new tab)</span></a>`
             : d.label;
           const contactPart = d.contact
             ? `<div class="doc-contact">
@@ -971,7 +987,6 @@ function openSheet(step, triggerEl){
   sheetInner.innerHTML = html;
   document.getElementById('closeBtn').addEventListener('click', closeSheet);
   scrim.classList.add('open');
-  sheet.classList.add('open');
   document.body.style.overflow = 'hidden';
   // Move focus into the sheet for keyboard/screen-reader users
   const closeBtnEl = document.getElementById('closeBtn');
