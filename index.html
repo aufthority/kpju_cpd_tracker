@@ -415,6 +415,22 @@ ul.doclist li::before{
   border-top:none;
 }
 
+ul.doclist li a{
+  color:var(--blue-60);
+  text-decoration:none;
+  font-weight:500;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+ul.doclist li a:hover, ul.doclist li a:focus-visible{
+  text-decoration:underline;
+}
+.doc-link-icon{
+  font-size:12px;
+  color:var(--blue-60);
+}
+
 .closebtn{
   position:absolute;
   top:20px; right:24px;
@@ -490,7 +506,9 @@ const steps = [
     teaser:'Speakers, venue, fee and materials — the internal decisions before CCPD approval.',
     overview:'Lock in the shape of the programme: who is speaking, where it will be held, what it costs, and what materials are needed. Nothing here is formally submitted yet — this is the internal decision phase before CCPD approval.',
     tasks:['Confirm speaker availability and topics','Shortlist and confirm venue','Set the programme fee','Scope materials needed for the session'],
-    docs:[]
+    docs:[
+      {label:'CPD Proposal Template', url:'https://docs.google.com/document/d/1wzi2D-cBoBPcWd6kDzWXwjFNwTXeSQxL/copy'}
+    ]
   },
   {
     id:'ccpd', type:'milestone',
@@ -498,7 +516,13 @@ const steps = [
     teaser:'Budget, HRDC application, trainer credentials and CPD points — the approval gate.',
     overview:'Formal submission to CCPD covering the budget, HRDC application, trainer credentials, and CPD points application. This is the approval gate the whole programme depends on.',
     tasks:['Prepare and submit budget','Submit HRDC application','Compile TTT (Train-the-Trainer) certificates','Prepare trainer profile / CV','Submit KKM/MMA CPD points application'],
-    docs:['Budget proposal','HRDC application form','TTT certificates','Trainer profile / CV','KKM/MMA CPD points application']
+    docs:[
+      {label:'Budget proposal', url:'https://docs.google.com/spreadsheets/d/1UqO-7Q2bMaEx1N4F8pBGlBMaE1p8GY3R/copy'},
+      {label:'HRDC application form', url:'https://docs.google.com/document/d/1t2zmJI8B50ltuHtQVJ6VASyS2H8OTVOo/copy'},
+      {label:'TTT certificates', url:null},
+      {label:'Trainer profile / CV', url:null},
+      {label:'KKM/MMA CPD points application', url:null}
+    ]
   },
   {
     id:'marketing', type:'band',
@@ -506,7 +530,11 @@ const steps = [
     teaser:'Flyer, distribution, management approval and open registration.',
     overview:'Get the programme in front of participants and open registration. Materials can be purchased at this stage, but not through pay-and-claim.',
     tasks:['Flyer designed by CITE','Distribute via CCPD / School channels','Obtain management approval','Open registration form (Google Form)','Purchase materials (no pay & claim)'],
-    docs:['Flyer','Management approval memo','Registration form / Gform link']
+    docs:[
+      {label:'Flyer', url:null},
+      {label:'Management approval memo', url:null},
+      {label:'Registration form / Gform link', url:'https://docs.google.com/forms/d/1gW-DLmOfSSq5e6YRdsdPOUaFTiIUWf7iCTnr2NQYgmY/copy'}
+    ]
   },
   {
     id:'documentation', type:'band',
@@ -514,7 +542,17 @@ const steps = [
     teaser:'The paperwork-heavy stage — everything Finance and CCPD need on file.',
     overview:'Compile every document Finance and CCPD need ahead of the event — this is the paperwork-heavy stage that closes the loop between marketing and final prep.',
     tasks:['Finalise participants list','Submit registration form to Finance','Compile HRDC documents','Request quotation from CCPD','Compile trainers profile & TTT certificates','Finalise tentative programme','Arrange venue Letter of Undertaking (LOU)','Place meal order'],
-    docs:['Participants list','Registration form (Finance copy)','HRDC documents','Quotation from CCPD','Trainers profile / CV','TTT certificates','Tentative programme','Venue LOU','Meal order']
+    docs:[
+      {label:'Participants list', url:null},
+      {label:'Registration form (Finance copy)', url:null},
+      {label:'HRDC documents (requirement checklist)', url:'https://docs.google.com/document/d/1YOGUlnI_3cXAWGCFXKq68VzFIDDZD8kd/preview'},
+      {label:'Quotation from CCPD', url:null},
+      {label:'Trainers profile / CV', url:null},
+      {label:'TTT certificates', url:null},
+      {label:'Tentative programme', url:'https://docs.google.com/document/d/1IuiZOexyt8LAEnOMSImLiDZx-pUyt8CQ/copy'},
+      {label:'Venue LOU', url:null},
+      {label:'Meal order', url:null}
+    ]
   },
   {
     id:'hrdc-grant', type:'milestone',
@@ -522,7 +560,13 @@ const steps = [
     teaser:'Grant application, attendance, certificates and trainer payment details.',
     overview:'Final administrative push before the event: the HRDC grant application, attendance and certificate prep, and trainer payment details.',
     tasks:['Submit HRDC Grant Application (by Hospital / Org / Employer)','Prepare T3 attendance','Prepare certificates','Collect trainers\' invitation & payee details','Process incentives claim'],
-    docs:['HRDC Grant Application','T3 attendance form','Certificates','Trainer invitation letter & payee details','Incentives claim form']
+    docs:[
+      {label:'HRDC Grant Application', url:null},
+      {label:'T3 attendance form', url:null},
+      {label:'Certificates', url:null},
+      {label:'Trainer invitation letter & payee details', url:null},
+      {label:'Incentives claim form', url:null}
+    ]
   },
   {
     id:'event', type:'event',
@@ -537,7 +581,13 @@ const steps = [
     teaser:'Certificates, feedback, claims and final reporting — close the loop within a week.',
     overview:'Close out the programme within a week of it ending: get certificates and feedback in, settle trainer claims, and hand CCPD the final report and records.',
     tasks:['Distribute e-certificates to participants','Collect and compile participant feedback / evaluation forms','Submit trainers\' claims and payee reconciliation','Update CPD points and attendance records','Submit final report to CCPD','Archive event documentation'],
-    docs:['Participant feedback / evaluation forms','Final attendance & certificate records','Trainers\' claim reconciliation','CPD points submission','Final report to CCPD']
+    docs:[
+      {label:'Participant feedback / evaluation forms', url:'https://docs.google.com/forms/d/e/1FAIpQLSd0-mNI-ZYv382Qa8DId9XQBgM1IACpRISlA8kJRT6NnwtGIg/viewform'},
+      {label:'Final attendance & certificate records', url:null},
+      {label:'Trainers\' claim reconciliation', url:null},
+      {label:'CPD points submission', url:null},
+      {label:'Final report to CCPD', url:null}
+    ]
   }
 ];
 
@@ -775,7 +825,11 @@ function openSheet(step){
     html += `
       <div class="sheet-section docs">
         <h3>Documents required</h3>
-        <ul class="doclist">${step.docs.map(d=>`<li>${d}</li>`).join('')}</ul>
+        <ul class="doclist">${step.docs.map(d=>
+          d.url
+            ? `<li><a href="${d.url}" target="_blank" rel="noopener">${d.label}<span class="doc-link-icon">&#8599;</span></a></li>`
+            : `<li>${d.label}</li>`
+        ).join('')}</ul>
       </div>
     `;
   }
