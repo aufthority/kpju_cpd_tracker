@@ -244,6 +244,17 @@ h1{
   border-bottom:2px solid var(--paper-white);
   pointer-events:none;
 }
+
+/* Keeps "Open tracker" and "Upload Event Photos" on the same row as a
+   unit — the pair wraps together onto its own line if space runs out,
+   rather than splitting apart from each other. */
+.prog-actions{
+  display:flex;
+  gap:var(--sp-8);
+  flex-wrap:nowrap;
+  justify-content:center;
+}
+
 .prog-go{
   flex:none;
   height:48px;
@@ -258,6 +269,7 @@ h1{
   letter-spacing:-0.01em;
   cursor:pointer;
   transition:opacity .12s ease;
+  white-space:nowrap;
 }
 .prog-go:hover:not(:disabled){ opacity:0.8; }
 .prog-go:disabled{ background:var(--ash); color:var(--smoke); cursor:not-allowed; }
@@ -280,9 +292,19 @@ h1{
   text-decoration:none;
   cursor:pointer;
   transition:opacity .12s ease;
+  white-space:nowrap;
 }
 .prog-photo.show{ display:inline-flex; }
 .prog-photo:hover, .prog-photo:focus-visible{ opacity:0.75; outline:none; }
+
+/* On narrow phones, shrink padding/font so both buttons reliably fit
+   one row side by side without overflowing the viewport. */
+@media (max-width:420px){
+  .prog-go, .prog-photo{
+    padding:0 var(--sp-16);
+    font-size:var(--text-body-sm);
+  }
+}
 
 .prog-status{
   display:inline-block;
@@ -832,8 +854,10 @@ body.has-install-banner .masthead-utility{
           <option value="">Loading programmes…</option>
         </select>
       </div>
-      <button class="prog-go" id="progGo" disabled>Open tracker</button>
-      <a class="prog-photo" id="progPhoto" href="#" target="_blank" rel="noopener noreferrer">Upload Event Photos</a>
+      <div class="prog-actions">
+        <button class="prog-go" id="progGo" disabled>Open tracker</button>
+        <a class="prog-photo" id="progPhoto" href="#" target="_blank" rel="noopener noreferrer">Upload Event Photos</a>
+      </div>
     </div>
     <p class="prog-status" id="progStatus">Loading programme list…</p>
   </div>
