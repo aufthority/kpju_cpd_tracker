@@ -591,6 +591,42 @@ footer.note a:hover, footer.note a:focus-visible{
   color:var(--slate);
 }
 
+/* ---- Telegram CPD Bot floating CTA ---- */
+.cpd-bot-cta{
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  z-index:1000;
+  background:var(--carbon-black);
+  color:var(--paper-white);
+  font-family:var(--font-mono);
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+  text-decoration:none;
+  padding:14px 20px;
+  border:2px solid var(--carbon-black);
+  border-radius:0;
+  transition:background .15s ease, color .15s ease;
+}
+.cpd-bot-cta:hover,
+.cpd-bot-cta:focus-visible{
+  background:var(--voltage-yellow);
+  color:var(--carbon-black);
+  outline:none;
+}
+@media (max-width:640px){
+  .cpd-bot-cta{
+    bottom:16px;
+    right:16px;
+    left:16px;
+    text-align:center;
+    font-size:12px;
+    padding:12px 16px;
+  }
+}
+
 /* ---- Responsive tuning ---- */
 @media (min-width:640px){
   .page{ padding:0 var(--sp-24); }
@@ -654,6 +690,16 @@ footer.note a:hover, footer.note a:focus-visible{
     <button class="closebtn" id="closeBtn">&times;</button>
   </div>
 </div>
+
+<a
+  href="https://t.me/KPJU_SOPCPD_Bot"
+  target="_blank"
+  rel="noopener noreferrer"
+  class="cpd-bot-cta"
+  aria-label="Ask the CPD Bot on Telegram"
+>
+  ASK THE CPD BOT
+</a>
 
 <script>
 const steps = [
