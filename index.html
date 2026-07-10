@@ -96,7 +96,7 @@ h1{
 .legend-item{
   display:flex; align-items:center; gap:8px;
   font-family:'IBM Plex Mono', monospace;
-  font-size:11px;
+  font-size:12px;
   color:var(--gray-70);
   letter-spacing:0.16px;
 }
@@ -184,6 +184,27 @@ h1{
 }
 .prog-status.is-error{ color:var(--red-60); }
 
+/* ---- Timeline section heading ---- */
+.timeline-heading{
+  padding:24px 32px 0;
+}
+.timeline-heading h2{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:0.16px;
+  text-transform:uppercase;
+  color:var(--gray-70);
+  margin:0 0 4px;
+}
+.timeline-heading p{
+  font-size:13px;
+  color:var(--gray-60);
+  margin:0;
+  max-width:60ch;
+  line-height:1.5;
+}
+
 /* ---- Timeline ---- */
 
 .timeline{
@@ -246,7 +267,7 @@ h1{
 
 .phase-label{
   font-family:'IBM Plex Mono', monospace;
-  font-size:11px;
+  font-size:12px;
   letter-spacing:0.32px;
   text-transform:uppercase;
   color:var(--blue-60);
@@ -280,6 +301,16 @@ h1{
   max-width:42ch;
 }
 
+.node-cta{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.16px;
+  color:var(--blue-60);
+  margin-top:10px;
+  opacity:0.85;
+}
+.tcard:hover .node-cta, .tcard:focus-visible .node-cta{ opacity:1; text-decoration:underline; }
+
 /* ---- Desktop: alternating structured layout ---- */
 @media (min-width:800px){
   .timeline{ padding:56px 8px 40px; }
@@ -311,6 +342,8 @@ h1{
   }
   .node-teaser{ margin-left:auto; margin-right:0; }
   .titem[data-side="right"] .node-teaser{ margin-left:0; margin-right:auto; }
+  .titem[data-side="left"] .node-cta{ margin-left:auto; margin-right:0; }
+  .titem[data-side="right"] .node-cta{ margin-left:0; margin-right:auto; }
 }
 
 /* ---- Bottom sheet (Carbon panel: sharp corners, hairline border) ---- */
@@ -491,6 +524,13 @@ footer.note{
   font-family:'IBM Plex Mono', monospace;
   letter-spacing:0.16px;
 }
+footer.note a{
+  color:var(--blue-60);
+  text-decoration:underline;
+}
+footer.note a:hover, footer.note a:focus-visible{
+  color:var(--blue-70);
+}
 </style>
 </head>
 <body>
@@ -523,15 +563,20 @@ footer.note{
     <div class="legend-item"><span class="legend-swatch post"></span>Post-event follow-up</div>
   </div>
 
+  <div class="timeline-heading">
+    <h2>Programme Lifecycle Reference</h2>
+    <p>A general guide to how every CPD programme moves through CCPD, from planning to close-out. Tap any stage below for its overview, tasks, and documents. This reference doesn't change based on the programme selected above — for a specific programme's live status, open its tracker.</p>
+  </div>
+
   <div class="timeline" id="timeline">
     <svg class="spine-svg" id="spineSvg"></svg>
   </div>
 
-  <footer class="note">DATA SOURCE — WORKFLOW_STEPS · READS FROM PUBLISHED GOOGLE SHEET (PLANNED) · DRAFT V3 · IBM CARBON TOKENS</footer>
+  <footer class="note">Built by <a href="https://www.aufthority.com/" target="_blank" rel="noopener">Aufthority</a> 2026</footer>
 </div>
 
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheet">
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitleLive">
   <div class="sheet-inner" id="sheetInner">
     <button class="closebtn" id="closeBtn">&times;</button>
   </div>
@@ -765,8 +810,11 @@ async function loadProgrammeIndex(){
       ? `${programmes.length} programme${programmes.length === 1 ? '' : 's'} loaded.`
       : 'No programmes found in the sheet yet.');
   }catch(err){
+    // Log the technical detail for debugging, but keep the on-screen
+    // message plain-language for non-technical staff.
+    console.error('Programme index load failed:', err);
     populateDropdown([]);
-    setStatus('Could not load programme list (' + err.message + '). Check the sheet is published to web as CSV.', true);
+    setStatus('Couldn\u2019t load the programme list right now. Please try refreshing the page, or contact Auf if this keeps happening.', true);
   }
 }
 
@@ -792,16 +840,17 @@ steps.forEach((step, i)=>{
   item.dataset.side = side;
   item.innerHTML = `
     <div class="tmarker ${markerClass(step.type)}"></div>
-    <div class="tcard" tabindex="0" role="button" aria-label="${step.title}">
+    <div class="tcard" tabindex="0" role="button" aria-label="${step.title}, tap for details">
       <div class="phase-label ${labelClass(step.type)}">${step.phase}</div>
       <div class="node-title">${step.title}</div>
       <div class="node-window">${step.window}</div>
       <div class="node-teaser">${step.teaser}</div>
+      <div class="node-cta">Tap for details →</div>
     </div>
   `;
   const card = item.querySelector('.tcard');
-  card.addEventListener('click', ()=>openSheet(step));
-  card.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openSheet(step); } });
+  card.addEventListener('click', ()=>openSheet(step, card));
+  card.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openSheet(step, card); } });
   timeline.appendChild(item);
 });
 
@@ -859,13 +908,15 @@ setTimeout(drawSpine, 50);
 const scrim = document.getElementById('scrim');
 const sheet = document.getElementById('sheet');
 const sheetInner = document.getElementById('sheetInner');
+let lastTrigger = null; // element to restore focus to on close
 
-function openSheet(step){
+function openSheet(step, triggerEl){
+  lastTrigger = triggerEl || null;
   const color = step.type==='milestone' ? 'var(--red-60)' : step.type==='event' ? 'var(--green-50)' : step.type==='post' ? 'var(--purple-60)' : 'var(--blue-60)';
   let html = `
-    <button class="closebtn" id="closeBtn">&times;</button>
+    <button class="closebtn" id="closeBtn" aria-label="Close">&times;</button>
     <div class="sheet-eyebrow" style="color:${color}">${step.phase}</div>
-    <div class="sheet-title">${step.title}</div>
+    <div class="sheet-title" id="sheetTitleLive">${step.title}</div>
     <div class="sheet-window">${step.window}</div>
     <div class="sheet-section">
       <h3>Overview</h3>
@@ -921,14 +972,30 @@ function openSheet(step){
   document.getElementById('closeBtn').addEventListener('click', closeSheet);
   scrim.classList.add('open');
   sheet.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Move focus into the sheet for keyboard/screen-reader users
+  const closeBtnEl = document.getElementById('closeBtn');
+  if(closeBtnEl) closeBtnEl.focus();
 }
 
 function closeSheet(){
   scrim.classList.remove('open');
   sheet.classList.remove('open');
+  document.body.style.overflow = '';
+  if(lastTrigger && typeof lastTrigger.focus === 'function'){
+    lastTrigger.focus();
+  }
+  lastTrigger = null;
 }
 
 scrim.addEventListener('click', closeSheet);
+
+// Escape key closes the sheet
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' && sheet.classList.contains('open')){
+    closeSheet();
+  }
+});
 </script>
 
 </body>
