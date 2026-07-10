@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPD Programme Timeline — KPJU School of Pharmacy</title>
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  /* Carbon tokens */
+  --blue-60:#0f62fe;
+  --blue-70:#0043ce;
+  --blue-10:#edf5ff;
+  --gray-100:#161616;
+  --gray-90:#262626;
+  --gray-70:#525252;
+  --gray-60:#6f6f6f;
+  --gray-20:#e0e0e0;
+  --gray-10:#f4f4f4;
+  --white:#ffffff;
+  --red-60:#da1e28;
+  --red-10:#fff1f1;
+  --green-50:#24a148;
+  --green-10:#defbe6;
+  --purple-60:#8a3ffc;
+  --purple-10:#f6f2ff;
+}
+
+*{ box-sizing:border-box; }
+
+html,body{
+  margin:0; padding:0;
+  background:var(--white);
+  color:var(--gray-100);
+  font-family:'IBM Plex Sans', sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* Carbon focus ring */
+:focus-visible{
+  outline:2px solid var(--blue-60);
+  outline-offset:2px;
+}
+
+.page{
+  max-width:1000px;
+  margin:0 auto;
+  min-height:100vh;
+  position:relative;
+}
+
+header{
+  padding:40px 32px 28px;
+  border-bottom:1px solid var(--gray-20);
+  background:var(--gray-10);
+}
+
+.eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  letter-spacing:0.32px;
+  text-transform:uppercase;
+  color:var(--blue-60);
+  margin:0 0 12px;
+  font-weight:500;
+}
+
+h1{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-weight:400;
+  font-size:32px;
+  line-height:1.2;
+  letter-spacing:0;
+  margin:0 0 10px;
+  color:var(--gray-100);
+}
+
+.sub{
+  font-size:14px;
+  color:var(--gray-70);
+  line-height:1.45;
+  margin:0;
+  max-width:56ch;
+}
+
+.legend{
+  display:flex;
+  gap:24px;
+  padding:16px 32px;
+  border-bottom:1px solid var(--gray-20);
+  flex-wrap:wrap;
+}
+.legend-item{
+  display:flex; align-items:center; gap:8px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  color:var(--gray-70);
+  letter-spacing:0.16px;
+}
+.legend-swatch{ width:10px; height:10px; flex:none; }
+.legend-swatch.duration{ background:var(--blue-60); }
+.legend-swatch.deadline{ background:var(--red-60); }
+.legend-swatch.event{ background:var(--green-50); }
+.legend-swatch.post{ background:var(--purple-60); }
+
+/* ---- Programme launcher ---- */
+.launcher{
+  padding:24px 32px 28px;
+  border-bottom:1px solid var(--gray-20);
+}
+.launcher h2{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:0.16px;
+  text-transform:uppercase;
+  color:var(--gray-70);
+  margin:0 0 4px;
+}
+.launcher .launcher-sub{
+  font-size:13px;
+  color:var(--gray-60);
+  margin:0 0 16px;
+}
+.prog-picker{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.prog-select-wrap{
+  position:relative;
+  flex:1 1 280px;
+  min-width:220px;
+}
+.prog-select{
+  width:100%;
+  height:44px;
+  padding:0 40px 0 12px;
+  background:var(--gray-10);
+  border:none;
+  border-bottom:1px solid var(--gray-70);
+  color:var(--gray-100);
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:14px;
+  appearance:none;
+  -webkit-appearance:none;
+  cursor:pointer;
+}
+.prog-select:disabled{ color:var(--gray-60); cursor:not-allowed; }
+.prog-select-wrap::after{
+  content:'';
+  position:absolute;
+  right:14px; top:50%;
+  width:10px; height:10px;
+  transform:translateY(-60%) rotate(45deg);
+  border-right:2px solid var(--gray-70);
+  border-bottom:2px solid var(--gray-70);
+  pointer-events:none;
+}
+.prog-go{
+  flex:none;
+  height:44px;
+  padding:0 20px;
+  background:var(--blue-60);
+  color:var(--white);
+  border:none;
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:14px;
+  font-weight:500;
+  letter-spacing:0.16px;
+  cursor:pointer;
+  transition:background .12s ease;
+}
+.prog-go:hover:not(:disabled){ background:var(--blue-70); }
+.prog-go:disabled{ background:var(--gray-20); color:var(--gray-60); cursor:not-allowed; }
+.prog-status{
+  margin:10px 0 0;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  color:var(--gray-60);
+}
+.prog-status.is-error{ color:var(--red-60); }
+
+/* ---- Timeline ---- */
+
+.timeline{
+  position:relative;
+  padding:44px 24px 40px;
+}
+
+.spine-svg{
+  position:absolute;
+  top:0; left:0;
+  pointer-events:none;
+  z-index:0;
+  display:none;
+}
+
+/* Mobile-first: single column, stacked left rail */
+.titem{
+  position:relative;
+  padding-left:44px;
+  margin-bottom:36px;
+  z-index:2;
+}
+
+.timeline::before{
+  content:'';
+  position:absolute;
+  left:31px;
+  top:48px;
+  bottom:20px;
+  width:2px;
+  background:var(--gray-20);
+  z-index:0;
+}
+
+.tmarker{
+  position:absolute;
+  left:24px; top:2px;
+  width:14px; height:14px;
+  background:var(--white);
+  border:2px solid var(--blue-60);
+  z-index:2;
+  transition:transform .12s ease;
+}
+.tmarker.milestone{ border-color:var(--red-60); background:var(--red-60); }
+.tmarker.event{ border-color:var(--green-50); background:var(--green-50); width:16px; height:16px; left:23px; }
+.tmarker.post{ border-color:var(--purple-60); background:var(--purple-60); }
+
+.tcard{
+  cursor:pointer;
+  text-align:left;
+  border-left:1px solid transparent;
+  padding-left:14px;
+  margin-left:-14px;
+  transition:border-color .12s ease, background .12s ease;
+}
+.tcard:hover, .tcard:focus-visible{
+  background:var(--blue-10);
+  border-left-color:var(--blue-60);
+}
+
+.phase-label{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.32px;
+  text-transform:uppercase;
+  color:var(--blue-60);
+  margin-bottom:4px;
+  font-weight:500;
+}
+.phase-label.milestone-label{ color:var(--red-60); }
+.phase-label.event-label{ color:var(--green-50); }
+.phase-label.post-label{ color:var(--purple-60); }
+
+.node-title{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:20px;
+  font-weight:500;
+  color:var(--gray-100);
+  line-height:1.3;
+}
+
+.node-window{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  color:var(--gray-60);
+  margin-top:4px;
+}
+
+.node-teaser{
+  font-size:13px;
+  color:var(--gray-70);
+  margin-top:8px;
+  line-height:1.5;
+  max-width:42ch;
+}
+
+/* ---- Desktop: alternating structured layout ---- */
+@media (min-width:800px){
+  .timeline{ padding:56px 8px 40px; }
+  .timeline::before{ display:none; }
+  .spine-svg{ display:block; }
+
+  .titem{
+    width:44%;
+    padding-left:0;
+    margin-bottom:56px;
+  }
+  .titem[data-side="left"]{
+    margin-right:56%;
+    text-align:right;
+  }
+  .titem[data-side="right"]{
+    margin-left:56%;
+    text-align:left;
+  }
+  .titem[data-side="left"] .tmarker{ left:auto; right:-8px; top:2px; }
+  .titem[data-side="right"] .tmarker{ left:-8px; top:2px; }
+
+  .titem[data-side="left"] .tcard{
+    border-left:none; border-right:1px solid transparent;
+    padding-left:0; padding-right:14px; margin-left:0; margin-right:-14px;
+  }
+  .titem[data-side="left"] .tcard:hover, .titem[data-side="left"] .tcard:focus-visible{
+    border-right-color:var(--blue-60);
+  }
+  .node-teaser{ margin-left:auto; margin-right:0; }
+  .titem[data-side="right"] .node-teaser{ margin-left:0; margin-right:auto; }
+}
+
+/* ---- Bottom sheet (Carbon panel: sharp corners, hairline border) ---- */
+
+.scrim{
+  position:fixed;
+  inset:0;
+  background:rgba(22,22,22,0.55);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .15s ease;
+  z-index:10;
+}
+.scrim.open{ opacity:1; pointer-events:auto; }
+
+.sheet{
+  position:fixed;
+  left:0; right:0; bottom:0;
+  max-width:680px;
+  margin:0 auto;
+  background:var(--white);
+  border-top:2px solid var(--blue-60);
+  transform:translateY(100%);
+  transition:transform .22s cubic-bezier(0.2,0,0.38,0.9);
+  z-index:11;
+  max-height:84vh;
+  overflow-y:auto;
+}
+.sheet.open{ transform:translateY(0); }
+
+.sheet-inner{ padding:28px 32px 40px; position:relative; }
+
+.sheet-eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  letter-spacing:0.32px;
+  text-transform:uppercase;
+  font-weight:500;
+}
+
+.sheet-title{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:28px;
+  font-weight:400;
+  margin:8px 0 4px;
+  color:var(--gray-100);
+}
+
+.sheet-window{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px;
+  color:var(--gray-60);
+  margin-bottom:20px;
+}
+
+.sheet-section{ margin-top:24px; }
+
+.sheet-section h3{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.32px;
+  text-transform:uppercase;
+  color:var(--blue-60);
+  margin:0 0 12px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--gray-20);
+}
+.sheet-section.docs h3{ color:var(--red-60); }
+.sheet-section.post h3{ color:var(--purple-60); }
+
+.sheet-section p.overview{
+  font-size:15px;
+  line-height:1.6;
+  color:var(--gray-100);
+  margin:0;
+}
+
+ul.tasklist, ul.doclist{ margin:0; padding:0; list-style:none; }
+ul.tasklist li, ul.doclist li{
+  font-size:14px;
+  line-height:1.5;
+  padding:10px 0 10px 26px;
+  position:relative;
+  border-bottom:1px solid var(--gray-20);
+  color:var(--gray-100);
+}
+ul.tasklist li:last-child, ul.doclist li:last-child{ border-bottom:none; }
+ul.tasklist li::before{
+  content:'';
+  position:absolute;
+  left:2px; top:17px;
+  width:8px; height:8px;
+  background:var(--blue-60);
+}
+ul.doclist li::before{
+  content:'';
+  position:absolute;
+  left:0; top:12px;
+  width:12px; height:15px;
+  border:1.5px solid var(--red-60);
+  border-top:none;
+}
+
+.closebtn{
+  position:absolute;
+  top:20px; right:24px;
+  width:32px; height:32px;
+  border:1px solid var(--gray-20);
+  background:var(--white);
+  color:var(--gray-70);
+  font-size:18px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.closebtn:hover{ background:var(--gray-10); border-color:var(--blue-60); color:var(--blue-60); }
+
+footer.note{
+  padding:20px 32px;
+  font-size:11px;
+  color:var(--gray-60);
+  border-top:1px solid var(--gray-20);
+  font-family:'IBM Plex Mono', monospace;
+  letter-spacing:0.16px;
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">KPJU School of Pharmacy — CCPD</p>
+    <h1>CPD Programme Timeline</h1>
+    <p class="sub">Select a stage to view its overview, required tasks, and documents — from first planning through to event day.</p>
+  </header>
+
+  <div class="launcher">
+    <h2>Your CPD Programmes</h2>
+    <p class="launcher-sub">Select a programme to open its tracker — see exactly which tasks are done and where it stands.</p>
+    <div class="prog-picker">
+      <div class="prog-select-wrap">
+        <select class="prog-select" id="progSelect" disabled>
+          <option value="">Loading programmes…</option>
+        </select>
+      </div>
+      <button class="prog-go" id="progGo" disabled>Open tracker</button>
+    </div>
+    <p class="prog-status" id="progStatus">Loading programme list…</p>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch duration"></span>Duration phase</div>
+    <div class="legend-item"><span class="legend-swatch deadline"></span>Fixed deadline</div>
+    <div class="legend-item"><span class="legend-swatch event"></span>Event day</div>
+    <div class="legend-item"><span class="legend-swatch post"></span>Post-event follow-up</div>
+  </div>
+
+  <div class="timeline" id="timeline">
+    <svg class="spine-svg" id="spineSvg"></svg>
+  </div>
+
+  <footer class="note">DATA SOURCE — WORKFLOW_STEPS · READS FROM PUBLISHED GOOGLE SHEET (PLANNED) · DRAFT V3 · IBM CARBON TOKENS</footer>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-inner" id="sheetInner">
+    <button class="closebtn" id="closeBtn">&times;</button>
+  </div>
+</div>
+
+<script>
+const steps = [
+  {
+    id:'planning', type:'band',
+    phase:'Step 1', title:'Planning', window:'T-90 to T-60 days',
+    teaser:'Speakers, venue, fee and materials — the internal decisions before CCPD approval.',
+    overview:'Lock in the shape of the programme: who is speaking, where it will be held, what it costs, and what materials are needed. Nothing here is formally submitted yet — this is the internal decision phase before CCPD approval.',
+    tasks:['Confirm speaker availability and topics','Shortlist and confirm venue','Set the programme fee','Scope materials needed for the session'],
+    docs:[]
+  },
+  {
+    id:'ccpd', type:'milestone',
+    phase:'Step 2 · Deadline', title:'CCPD Approval', window:'By T-60 days',
+    teaser:'Budget, HRDC application, trainer credentials and CPD points — the approval gate.',
+    overview:'Formal submission to CCPD covering the budget, HRDC application, trainer credentials, and CPD points application. This is the approval gate the whole programme depends on.',
+    tasks:['Prepare and submit budget','Submit HRDC application','Compile TTT (Train-the-Trainer) certificates','Prepare trainer profile / CV','Submit KKM/MMA CPD points application'],
+    docs:['Budget proposal','HRDC application form','TTT certificates','Trainer profile / CV','KKM/MMA CPD points application']
+  },
+  {
+    id:'marketing', type:'band',
+    phase:'Step 3', title:'Marketing', window:'T-60 to T-30 days',
+    teaser:'Flyer, distribution, management approval and open registration.',
+    overview:'Get the programme in front of participants and open registration. Materials can be purchased at this stage, but not through pay-and-claim.',
+    tasks:['Flyer designed by CITE','Distribute via CCPD / School channels','Obtain management approval','Open registration form (Google Form)','Purchase materials (no pay & claim)'],
+    docs:['Flyer','Management approval memo','Registration form / Gform link']
+  },
+  {
+    id:'documentation', type:'band',
+    phase:'Step 4', title:'Documentation', window:'T-30 to T-21 days',
+    teaser:'The paperwork-heavy stage — everything Finance and CCPD need on file.',
+    overview:'Compile every document Finance and CCPD need ahead of the event — this is the paperwork-heavy stage that closes the loop between marketing and final prep.',
+    tasks:['Finalise participants list','Submit registration form to Finance','Compile HRDC documents','Request quotation from CCPD','Compile trainers profile & TTT certificates','Finalise tentative programme','Arrange venue Letter of Undertaking (LOU)','Place meal order'],
+    docs:['Participants list','Registration form (Finance copy)','HRDC documents','Quotation from CCPD','Trainers profile / CV','TTT certificates','Tentative programme','Venue LOU','Meal order']
+  },
+  {
+    id:'hrdc-grant', type:'milestone',
+    phase:'Step 5 · Deadline', title:'HRDC Grant & Final Prep', window:'By T-14 days',
+    teaser:'Grant application, attendance, certificates and trainer payment details.',
+    overview:'Final administrative push before the event: the HRDC grant application, attendance and certificate prep, and trainer payment details.',
+    tasks:['Submit HRDC Grant Application (by Hospital / Org / Employer)','Prepare T3 attendance','Prepare certificates','Collect trainers\' invitation & payee details','Process incentives claim'],
+    docs:['HRDC Grant Application','T3 attendance form','Certificates','Trainer invitation letter & payee details','Incentives claim form']
+  },
+  {
+    id:'event', type:'event',
+    phase:'Event Day', title:'Programme Runs', window:'T-0',
+    teaser:'Everything above was in service of this day.',
+    overview:'The CPD programme takes place. Everything above this line was in service of this day.',
+    tasks:[], docs:[]
+  },
+  {
+    id:'post-event', type:'post',
+    phase:'Step 6 · Wrap-up', title:'Post-Event Follow-Up', window:'T+0 to T+7 days',
+    teaser:'Certificates, feedback, claims and final reporting — close the loop within a week.',
+    overview:'Close out the programme within a week of it ending: get certificates and feedback in, settle trainer claims, and hand CCPD the final report and records.',
+    tasks:['Distribute e-certificates to participants','Collect and compile participant feedback / evaluation forms','Submit trainers\' claims and payee reconciliation','Update CPD points and attendance records','Submit final report to CCPD','Archive event documentation'],
+    docs:['Participant feedback / evaluation forms','Final attendance & certificate records','Trainers\' claim reconciliation','CPD points submission','Final report to CCPD']
+  }
+];
+
+// ---- Programme index — live from the published Google Sheet CSV ----
+// Expected columns (header-name-driven, so column order/extra columns
+// don't matter): a programme name column, an event date column, and a
+// column holding the direct link to that programme's tracker tab
+// (e.g. https://docs.google.com/spreadsheets/d/.../edit#gid=123456789).
+const PROGRAMME_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYJ601A6UyBzOkx2VAvDnSytSnMY-6JbVvMlLYenaip6ycJcDgxsBFcAfZC3ZQZu2y-wRlto1TBRT3/pub?gid=1391415977&single=true&output=csv';
+
+const timeline = document.getElementById('timeline');
+const progSelect = document.getElementById('progSelect');
+const progGo = document.getElementById('progGo');
+const progStatus = document.getElementById('progStatus');
+
+// RFC 4180-compliant CSV parser: a field is only treated as quoted if
+// the double-quote is the very first character of that field. This
+// avoids the apostrophe-in-header bug seen in hand-rolled parsers.
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', i = 0, inQuotes = false;
+  const n = text.length;
+  while(i < n){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      }
+      field += c; i++; continue;
+    }
+    if(c === '"' && field.length === 0){ inQuotes = true; i++; continue; }
+    if(c === ','){ row.push(field); field = ''; i++; continue; }
+    if(c === '\r'){ i++; continue; }
+    if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+    field += c; i++;
+  }
+  if(field.length > 0 || row.length > 0){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.length > 1 || (r.length === 1 && r[0] !== ''));
+}
+
+// Header-name-driven lookup: matches by normalized header text so the
+// sheet can be restructured (columns reordered/renamed) without
+// breaking this front end — same pattern used across the CPD tools.
+function findCol(headers, candidates){
+  const norm = h => String(h || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const normHeaders = headers.map(norm);
+  for(const cand of candidates){
+    const idx = normHeaders.indexOf(norm(cand));
+    if(idx !== -1) return idx;
+  }
+  return -1;
+}
+
+function setStatus(msg, isError){
+  progStatus.textContent = msg;
+  progStatus.classList.toggle('is-error', !!isError);
+}
+
+function populateDropdown(programmes){
+  progSelect.innerHTML = '';
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = programmes.length ? 'Select a programme…' : 'No programmes found';
+  progSelect.appendChild(placeholder);
+
+  programmes.forEach(p=>{
+    const opt = document.createElement('option');
+    opt.value = p.sheetUrl;
+    opt.textContent = p.eventDate ? `${p.name} — ${p.eventDate}` : p.name;
+    progSelect.appendChild(opt);
+  });
+
+  progSelect.disabled = programmes.length === 0;
+  progGo.disabled = true;
+}
+
+progSelect.addEventListener('change', ()=>{
+  progGo.disabled = !progSelect.value;
+});
+
+function openSelected(){
+  const url = progSelect.value;
+  if(url) window.open(url, '_blank', 'noopener');
+}
+progGo.addEventListener('click', openSelected);
+
+async function loadProgrammeIndex(){
+  setStatus('Loading programme list…');
+  try{
+    const res = await fetch(PROGRAMME_CSV_URL, { cache:'no-store' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if(rows.length < 2){ throw new Error('Sheet returned no data rows'); }
+
+    const headers = rows[0];
+    const nameCol = findCol(headers, ['ProgramName','ProgrammeName','Program','Programme','Name']);
+    const dateCol = findCol(headers, ['EventDate','Date','Event']);
+    const urlCol  = findCol(headers, ['SheetURL','SheetUrl','TrackerURL','TrackerLink','Link','URL']);
+
+    if(nameCol === -1 || urlCol === -1){
+      throw new Error('Expected columns (programme name / tracker link) not found in sheet header');
+    }
+
+    const programmes = rows.slice(1)
+      .map(r => ({
+        name: (r[nameCol] || '').trim(),
+        eventDate: dateCol !== -1 ? (r[dateCol] || '').trim() : '',
+        sheetUrl: (r[urlCol] || '').trim()
+      }))
+      .filter(p => p.name && p.sheetUrl);
+
+    populateDropdown(programmes);
+    setStatus(programmes.length
+      ? `${programmes.length} programme${programmes.length === 1 ? '' : 's'} loaded.`
+      : 'No programmes found in the sheet yet.');
+  }catch(err){
+    populateDropdown([]);
+    setStatus('Could not load programme list (' + err.message + '). Check the sheet is published to web as CSV.', true);
+  }
+}
+
+loadProgrammeIndex();
+
+function labelClass(type){
+  if(type==='milestone') return 'milestone-label';
+  if(type==='event') return 'event-label';
+  if(type==='post') return 'post-label';
+  return '';
+}
+function markerClass(type){
+  if(type==='milestone') return 'milestone';
+  if(type==='event') return 'event';
+  if(type==='post') return 'post';
+  return '';
+}
+
+steps.forEach((step, i)=>{
+  const side = i % 2 === 0 ? 'left' : 'right';
+  const item = document.createElement('div');
+  item.className = 'titem';
+  item.dataset.side = side;
+  item.innerHTML = `
+    <div class="tmarker ${markerClass(step.type)}"></div>
+    <div class="tcard" tabindex="0" role="button" aria-label="${step.title}">
+      <div class="phase-label ${labelClass(step.type)}">${step.phase}</div>
+      <div class="node-title">${step.title}</div>
+      <div class="node-window">${step.window}</div>
+      <div class="node-teaser">${step.teaser}</div>
+    </div>
+  `;
+  const card = item.querySelector('.tcard');
+  card.addEventListener('click', ()=>openSheet(step));
+  card.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openSheet(step); } });
+  timeline.appendChild(item);
+});
+
+// ---- Orthogonal connector (Carbon-style circuit trace, right angles only) ----
+function resolveVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function drawSpine(){
+  const svg = document.getElementById('spineSvg');
+  const isDesktop = window.matchMedia('(min-width:800px)').matches;
+  if(!isDesktop){
+    svg.innerHTML = '';
+    return;
+  }
+  const rect = timeline.getBoundingClientRect();
+  svg.setAttribute('width', rect.width);
+  svg.setAttribute('height', rect.height);
+  svg.innerHTML = '';
+
+  const markers = Array.from(timeline.querySelectorAll('.tmarker'));
+  const pts = markers.map(d=>{
+    const r = d.getBoundingClientRect();
+    return { x: r.left + r.width/2 - rect.left, y: r.top + r.height/2 - rect.top };
+  });
+
+  const colorMap = { band: resolveVar('--blue-60'), milestone: resolveVar('--red-60'), event: resolveVar('--green-50'), post: resolveVar('--purple-60') };
+
+  for(let i=0;i<pts.length-1;i++){
+    const a = pts[i], b = pts[i+1];
+    const midY = (a.y + b.y)/2;
+    const targetType = steps[i+1].type;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M ${a.x} ${a.y} L ${a.x} ${midY} L ${b.x} ${midY} L ${b.x} ${b.y}`);
+    path.setAttribute('stroke', colorMap[targetType] || colorMap.band);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke-width','2');
+    if(targetType === 'milestone'){ path.setAttribute('stroke-dasharray','4 4'); }
+    svg.appendChild(path);
+  }
+}
+
+let resizeTimer;
+window.addEventListener('resize', ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(drawSpine, 100);
+});
+window.addEventListener('load', drawSpine);
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(drawSpine);
+}
+setTimeout(drawSpine, 50);
+
+// ---- Sheet logic ----
+const scrim = document.getElementById('scrim');
+const sheet = document.getElementById('sheet');
+const sheetInner = document.getElementById('sheetInner');
+
+function openSheet(step){
+  const color = step.type==='milestone' ? 'var(--red-60)' : step.type==='event' ? 'var(--green-50)' : step.type==='post' ? 'var(--purple-60)' : 'var(--blue-60)';
+  let html = `
+    <button class="closebtn" id="closeBtn">&times;</button>
+    <div class="sheet-eyebrow" style="color:${color}">${step.phase}</div>
+    <div class="sheet-title">${step.title}</div>
+    <div class="sheet-window">${step.window}</div>
+    <div class="sheet-section">
+      <h3>Overview</h3>
+      <p class="overview">${step.overview}</p>
+    </div>
+  `;
+  if(step.tasks.length){
+    html += `
+      <div class="sheet-section">
+        <h3>Tasks to do</h3>
+        <ul class="tasklist">${step.tasks.map(t=>`<li>${t}</li>`).join('')}</ul>
+      </div>
+    `;
+  }
+  if(step.docs.length){
+    html += `
+      <div class="sheet-section docs">
+        <h3>Documents required</h3>
+        <ul class="doclist">${step.docs.map(d=>`<li>${d}</li>`).join('')}</ul>
+      </div>
+    `;
+  }
+  sheetInner.innerHTML = html;
+  document.getElementById('closeBtn').addEventListener('click', closeSheet);
+  scrim.classList.add('open');
+  sheet.classList.add('open');
+}
+
+function closeSheet(){
+  scrim.classList.remove('open');
+  sheet.classList.remove('open');
+}
+
+scrim.addEventListener('click', closeSheet);
+</script>
+
+</body>
+</html>
