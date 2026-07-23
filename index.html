@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CPD Tracker — KPJU School of Pharmacy</title>
+<title>CPD Programme Timeline — KPJU School of Pharmacy</title>
 
 <!-- Link preview (Open Graph / Twitter Card) -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="CPD Tracker — KPJU School of Pharmacy">
+<meta property="og:title" content="CPD Programme Timeline — KPJU School of Pharmacy">
 <meta property="og:description" content="A centralised dashboard to plan, track and follow every CPD — start to finish.">
 <meta property="og:image" content="https://kpjucpdtracker.vercel.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://kpjucpdtracker.vercel.app/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="CPD Tracker — KPJU School of Pharmacy">
+<meta name="twitter:title" content="CPD Programme Timeline — KPJU School of Pharmacy">
 <meta name="twitter:description" content="A centralised dashboard to plan, track and follow every CPD — start to finish.">
 <meta name="twitter:image" content="https://kpjucpdtracker.vercel.app/og-image.png">
 
@@ -421,6 +421,50 @@ h1{
   font-family:var(--font-body);
   font-size:var(--text-caption);
   color:var(--smoke);
+}
+.target-track{
+  height:14px;
+  background:var(--mist-gray);
+  border-radius:7px;
+  overflow:hidden;
+  margin-top:var(--sp-8);
+}
+.target-fill{
+  height:100%;
+  background:var(--mint-chip);
+  border-radius:7px;
+}
+.target-labels{
+  display:flex;
+  justify-content:space-between;
+  gap:var(--sp-8);
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  color:var(--slate);
+  margin-top:6px;
+}
+.split-bar{
+  display:flex;
+  height:14px;
+  border-radius:7px;
+  overflow:hidden;
+  margin-top:var(--sp-8);
+  background:var(--mist-gray);
+}
+.split-self{ background:var(--mint-chip); }
+.split-company{ background:var(--voltage-yellow); }
+.split-legend{
+  display:flex;
+  gap:var(--sp-24);
+  flex-wrap:wrap;
+  margin-top:var(--sp-8);
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  color:var(--slate);
+}
+.split-swatch{
+  width:10px; height:10px; border-radius:3px;
+  display:inline-block; margin-right:6px; vertical-align:middle;
 }
 
 /* ---- Timeline: stacked list on mobile/tablet, snake flow on laptop ---- */
@@ -957,12 +1001,12 @@ body.sheet-open .cpd-bot-cta{
 </div>
 
 <div class="masthead-utility">
-  <p class="eyebrow">KPJU School of Pharmacy CPD Committee</p>
+  <p class="eyebrow">KPJU School of Pharmacy — CCPD</p>
 </div>
 
 <div class="page">
   <header>
-    <h1>CPD Tracker</h1>
+    <h1>CPD Programme Timeline</h1>
     <p class="sub">Select a stage to view its overview, required tasks, and documents — from first planning through to event day.</p>
   </header>
 
@@ -1017,6 +1061,30 @@ body.sheet-open .cpd-bot-cta{
       <div class="revenue-bars-label">By programme</div>
       <div id="revBarList"></div>
       <p class="revenue-footnote" id="revFootnote"></p>
+    </div>
+    <div class="revenue-bars">
+      <div class="revenue-bars-label">Target vs actual (RM 1,200,000 goal)</div>
+      <div class="target-track"><div class="target-fill" id="targetFill" style="width:0%;"></div></div>
+      <div class="target-labels">
+        <span id="targetActual">RM 0.00</span>
+        <span id="targetPercent">0%</span>
+        <span>RM 1,200,000.00</span>
+      </div>
+    </div>
+    <div class="revenue-bars">
+      <div class="revenue-bars-label">Revenue per participant, by programme</div>
+      <div id="revPerPartBarList"></div>
+    </div>
+    <div class="revenue-bars">
+      <div class="revenue-bars-label">Self- vs company-sponsored participants</div>
+      <div class="split-bar">
+        <div class="split-self" id="splitSelf" style="width:0%;"></div>
+        <div class="split-company" id="splitCompany" style="width:0%;"></div>
+      </div>
+      <div class="split-legend">
+        <span><span class="split-swatch" style="background:var(--mint-chip);"></span>Self-sponsored (<span id="splitSelfCount">0</span>)</span>
+        <span><span class="split-swatch" style="background:var(--voltage-yellow);"></span>Company-sponsored (<span id="splitCompanyCount">0</span>)</span>
+      </div>
     </div>
     <p class="prog-status" id="revStatus">Loading revenue data…</p>
   </div>
@@ -1314,6 +1382,16 @@ const revFlagValue = document.getElementById('revFlagValue');
 const revBarList = document.getElementById('revBarList');
 const revFootnote = document.getElementById('revFootnote');
 
+const REVENUE_TARGET = 1200000;
+const targetFillEl = document.getElementById('targetFill');
+const targetActualEl = document.getElementById('targetActual');
+const targetPercentEl = document.getElementById('targetPercent');
+const revPerPartBarList = document.getElementById('revPerPartBarList');
+const splitSelfEl = document.getElementById('splitSelf');
+const splitCompanyEl = document.getElementById('splitCompany');
+const splitSelfCountEl = document.getElementById('splitSelfCount');
+const splitCompanyCountEl = document.getElementById('splitCompanyCount');
+
 function setRevStatus(msg, isError){
   revStatus.textContent = msg;
   revStatus.classList.toggle('is-error', !!isError);
@@ -1357,14 +1435,20 @@ async function loadRevenueSummary(){
     const headers = rows[0];
     const nameCol = findCol(headers, ['Quotation / Client','Quotation/Client','Client','Programme','Name']);
     const amountCol = findCol(headers, ['Amount (RM)','Amount','AmountRM']);
+    const headcountCol = findCol(headers, ['Headcount']);
+    const selfCol = findCol(headers, ['Self-sponsored','Self Sponsored','SelfSponsored']);
+    const companyCol = findCol(headers, ['Company-sponsored','Company Sponsored','CompanySponsored']);
     if(nameCol === -1 || amountCol === -1){
       throw new Error('Expected columns not found in Revenue Summary sheet header');
     }
 
     const bars = [];
+    const perParticipantBars = [];
     const zeroNames = [];
     const flagged = [];
     let total = 0;
+    let selfTotal = 0;
+    let companyTotal = 0;
 
     rows.slice(1).forEach(r=>{
       const name = (r[nameCol] || '').trim();
@@ -1384,13 +1468,30 @@ async function loadRevenueSummary(){
       if(amount > 0){
         bars.push({ name, amount });
         total += amount;
+
+        const headcount = headcountCol > -1 ? parseAmount(r[headcountCol]) : NaN;
+        if(!isNaN(headcount) && headcount > 0){
+          perParticipantBars.push({ name, perParticipant: amount / headcount });
+        }
       }else{
         zeroNames.push(name);
+      }
+
+      if(selfCol > -1){
+        const s = parseAmount(r[selfCol]);
+        if(!isNaN(s)) selfTotal += s;
+      }
+      if(companyCol > -1){
+        const c = parseAmount(r[companyCol]);
+        if(!isNaN(c)) companyTotal += c;
       }
     });
 
     bars.sort((a,b)=> b.amount - a.amount);
     const max = bars.length ? bars[0].amount : 0;
+
+    perParticipantBars.sort((a,b)=> b.perParticipant - a.perParticipant);
+    const perPartMax = perParticipantBars.length ? perParticipantBars[0].perParticipant : 0;
 
     revTotalEl.textContent = formatRM(total);
     revCountEl.innerHTML = `${bars.length} <span style="font-size:16px;color:var(--smoke);">of ${bars.length + zeroNames.length + flagged.length}</span>`;
@@ -1412,6 +1513,29 @@ async function loadRevenueSummary(){
     }else{
       revFlagCard.style.display = 'none';
     }
+
+    // Target vs actual
+    const targetPct = Math.min(100, (total / REVENUE_TARGET) * 100);
+    targetFillEl.style.width = targetPct + '%';
+    targetActualEl.textContent = formatRM(total);
+    targetPercentEl.textContent = targetPct.toFixed(1) + '%';
+
+    // Revenue per participant, by programme
+    revPerPartBarList.innerHTML = perParticipantBars.map(b => `
+      <div class="rev-bar-row">
+        <div class="rev-bar-head"><span class="rev-bar-name">${b.name}</span><span class="rev-bar-value">${formatRM(b.perParticipant)}</span></div>
+        <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${perPartMax ? (b.perParticipant / perPartMax * 100) : 0}%;"></div></div>
+      </div>
+    `).join('');
+
+    // Self- vs company-sponsored split
+    const sponsorTotal = selfTotal + companyTotal;
+    const selfPct = sponsorTotal ? (selfTotal / sponsorTotal * 100) : 0;
+    const companyPct = sponsorTotal ? (companyTotal / sponsorTotal * 100) : 0;
+    splitSelfEl.style.width = selfPct + '%';
+    splitCompanyEl.style.width = companyPct + '%';
+    splitSelfCountEl.textContent = selfTotal;
+    splitCompanyCountEl.textContent = companyTotal;
 
     setRevStatus(`Updated from the Revenue Summary sheet · ${bars.length} programme${bars.length===1?'':'s'} with revenue.`);
   }catch(err){
