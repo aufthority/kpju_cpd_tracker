@@ -422,41 +422,31 @@ h1{
   font-size:var(--text-caption);
   color:var(--smoke);
 }
-.target-track{
-  height:14px;
-  background:var(--mist-gray);
-  border-radius:7px;
-  overflow:hidden;
+.ring-wrap{
+  display:flex;
+  justify-content:center;
   margin-top:var(--sp-8);
 }
-.target-fill{
-  height:100%;
-  background:var(--mint-chip);
-  border-radius:7px;
+.ring-value{
+  font-family:var(--font-display);
+  font-weight:700;
 }
-.target-labels{
-  display:flex;
-  justify-content:space-between;
-  gap:var(--sp-8);
+.ring-caption{
+  font-family:var(--font-mono);
+  fill:var(--smoke);
+}
+.ring-actual{
+  text-align:center;
   font-family:var(--font-mono);
   font-size:var(--text-caption);
   color:var(--slate);
-  margin-top:6px;
-}
-.split-bar{
-  display:flex;
-  height:14px;
-  border-radius:7px;
-  overflow:hidden;
   margin-top:var(--sp-8);
-  background:var(--mist-gray);
 }
-.split-self{ background:var(--mint-chip); }
-.split-company{ background:var(--voltage-yellow); }
 .split-legend{
   display:flex;
   gap:var(--sp-24);
   flex-wrap:wrap;
+  justify-content:center;
   margin-top:var(--sp-8);
   font-family:var(--font-mono);
   font-size:var(--text-caption);
@@ -1064,12 +1054,17 @@ body.sheet-open .cpd-bot-cta{
     </div>
     <div class="revenue-bars">
       <div class="revenue-bars-label">Target vs actual (RM 1,200,000 goal)</div>
-      <div class="target-track"><div class="target-fill" id="targetFill" style="width:0%;"></div></div>
-      <div class="target-labels">
-        <span id="targetActual">RM 0.00</span>
-        <span id="targetPercent">0%</span>
-        <span>RM 1,200,000.00</span>
+      <div class="ring-wrap">
+        <svg viewBox="0 0 180 180" width="160" height="160">
+          <circle cx="90" cy="90" r="70" fill="none" stroke="var(--mist-gray)" stroke-width="20"/>
+          <circle cx="90" cy="90" r="70" fill="none" stroke="var(--mint-chip)" stroke-width="20"
+            id="gaugeRing" stroke-dasharray="439.8" stroke-dashoffset="439.8"
+            stroke-linecap="round" transform="rotate(-90 90 90)"/>
+          <text x="90" y="84" text-anchor="middle" class="ring-value" font-size="26" fill="var(--carbon-black)" id="gaugePercent">0%</text>
+          <text x="90" y="104" text-anchor="middle" class="ring-caption" font-size="10" id="gaugeCaption">of RM 1.2M</text>
+        </svg>
       </div>
+      <p class="ring-actual" id="targetActual">RM 0.00 raised</p>
     </div>
     <div class="revenue-bars">
       <div class="revenue-bars-label">Revenue per participant, by programme</div>
@@ -1077,9 +1072,15 @@ body.sheet-open .cpd-bot-cta{
     </div>
     <div class="revenue-bars">
       <div class="revenue-bars-label">Self- vs company-sponsored participants</div>
-      <div class="split-bar">
-        <div class="split-self" id="splitSelf" style="width:0%;"></div>
-        <div class="split-company" id="splitCompany" style="width:0%;"></div>
+      <div class="ring-wrap">
+        <svg viewBox="0 0 180 180" width="160" height="160">
+          <circle cx="90" cy="90" r="70" fill="none" stroke="var(--voltage-yellow)" stroke-width="24"/>
+          <circle cx="90" cy="90" r="70" fill="none" stroke="var(--mint-chip)" stroke-width="24"
+            id="donutSelfArc" stroke-dasharray="0 439.8"
+            transform="rotate(-90 90 90)"/>
+          <text x="90" y="84" text-anchor="middle" class="ring-value" font-size="22" fill="var(--carbon-black)" id="donutTotal">0</text>
+          <text x="90" y="104" text-anchor="middle" class="ring-caption" font-size="10">participants</text>
+        </svg>
       </div>
       <div class="split-legend">
         <span><span class="split-swatch" style="background:var(--mint-chip);"></span>Self-sponsored (<span id="splitSelfCount">0</span>)</span>
@@ -1383,12 +1384,13 @@ const revBarList = document.getElementById('revBarList');
 const revFootnote = document.getElementById('revFootnote');
 
 const REVENUE_TARGET = 1200000;
-const targetFillEl = document.getElementById('targetFill');
+const RING_CIRCUMFERENCE = 439.8;
+const gaugeRingEl = document.getElementById('gaugeRing');
+const gaugePercentEl = document.getElementById('gaugePercent');
 const targetActualEl = document.getElementById('targetActual');
-const targetPercentEl = document.getElementById('targetPercent');
 const revPerPartBarList = document.getElementById('revPerPartBarList');
-const splitSelfEl = document.getElementById('splitSelf');
-const splitCompanyEl = document.getElementById('splitCompany');
+const donutSelfArcEl = document.getElementById('donutSelfArc');
+const donutTotalEl = document.getElementById('donutTotal');
 const splitSelfCountEl = document.getElementById('splitSelfCount');
 const splitCompanyCountEl = document.getElementById('splitCompanyCount');
 
@@ -1514,11 +1516,12 @@ async function loadRevenueSummary(){
       revFlagCard.style.display = 'none';
     }
 
-    // Target vs actual
+    // Target vs actual — radial gauge (ring fills clockwise from empty)
     const targetPct = Math.min(100, (total / REVENUE_TARGET) * 100);
-    targetFillEl.style.width = targetPct + '%';
-    targetActualEl.textContent = formatRM(total);
-    targetPercentEl.textContent = targetPct.toFixed(1) + '%';
+    const gaugeOffset = RING_CIRCUMFERENCE * (1 - targetPct / 100);
+    gaugeRingEl.setAttribute('stroke-dashoffset', gaugeOffset.toFixed(1));
+    gaugePercentEl.textContent = targetPct.toFixed(1) + '%';
+    targetActualEl.textContent = formatRM(total) + ' raised';
 
     // Revenue per participant, by programme
     revPerPartBarList.innerHTML = perParticipantBars.map(b => `
@@ -1528,12 +1531,11 @@ async function loadRevenueSummary(){
       </div>
     `).join('');
 
-    // Self- vs company-sponsored split
+    // Self- vs company-sponsored split — donut (self arc drawn over a company-colored base ring)
     const sponsorTotal = selfTotal + companyTotal;
-    const selfPct = sponsorTotal ? (selfTotal / sponsorTotal * 100) : 0;
-    const companyPct = sponsorTotal ? (companyTotal / sponsorTotal * 100) : 0;
-    splitSelfEl.style.width = selfPct + '%';
-    splitCompanyEl.style.width = companyPct + '%';
+    const selfArcLength = sponsorTotal ? (selfTotal / sponsorTotal) * RING_CIRCUMFERENCE : 0;
+    donutSelfArcEl.setAttribute('stroke-dasharray', `${selfArcLength.toFixed(1)} ${RING_CIRCUMFERENCE}`);
+    donutTotalEl.textContent = sponsorTotal;
     splitSelfCountEl.textContent = selfTotal;
     splitCompanyCountEl.textContent = companyTotal;
 
