@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CPD Programme Timeline — KPJU School of Pharmacy</title>
+<title>CPD Tracker — KPJU School of Pharmacy</title>
 
 <!-- Link preview (Open Graph / Twitter Card) -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="CPD Programme Timeline — KPJU School of Pharmacy">
+<meta property="og:title" content="CPD Tracker — KPJU School of Pharmacy">
 <meta property="og:description" content="A centralised dashboard to plan, track and follow every CPD — start to finish.">
 <meta property="og:image" content="https://kpjucpdtracker.vercel.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://kpjucpdtracker.vercel.app/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="CPD Programme Timeline — KPJU School of Pharmacy">
+<meta name="twitter:title" content="CPD Tracker — KPJU School of Pharmacy">
 <meta name="twitter:description" content="A centralised dashboard to plan, track and follow every CPD — start to finish.">
 <meta name="twitter:image" content="https://kpjucpdtracker.vercel.app/og-image.png">
 
@@ -957,12 +957,12 @@ body.sheet-open .cpd-bot-cta{
 </div>
 
 <div class="masthead-utility">
-  <p class="eyebrow">KPJU School of Pharmacy — CCPD</p>
+  <p class="eyebrow">KPJU School of Pharmacy CPD Committee</p>
 </div>
 
 <div class="page">
   <header>
-    <h1>CPD Programme Timeline</h1>
+    <h1>CPD Tracker</h1>
     <p class="sub">Select a stage to view its overview, required tasks, and documents — from first planning through to event day.</p>
   </header>
 
@@ -1304,7 +1304,7 @@ function setStatus(msg, isError){
 // File > Share > Publish to web > select "Revenue Summary" > CSV > Publish.
 // Until it's set, the widget shows a plain "not configured yet" message
 // instead of failing silently or showing a stale/wrong number.
-const REVENUE_CSV_URL = 'PASTE_REVENUE_SUMMARY_PUBLISHED_CSV_URL_HERE';
+const REVENUE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxpClIRXPy1wmTx3r-oArwX6s4q_MptPm_D0T2yweF4ZLCp8GeejiTJ_ZyzjhEBD7B_PwhhZc72EZ9/pub?gid=1660263190&single=true&output=csv';
 
 const revStatus = document.getElementById('revStatus');
 const revTotalEl = document.getElementById('revTotal');
