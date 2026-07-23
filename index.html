@@ -457,6 +457,100 @@ h1{
   display:inline-block; margin-right:6px; vertical-align:middle;
 }
 
+/* ---- Revenue bar row v2: name always gets its own full line, so long
+   programme names can wrap without ever pushing the value out of line
+   with its track. Track + value sit together underneath. ---- */
+.rev-bar-name{
+  font-family:var(--font-body);
+  font-weight:500;
+  font-size:var(--text-body-sm);
+  margin-bottom:6px;
+  line-height:1.3;
+}
+.rev-bar-meta{
+  display:flex;
+  align-items:center;
+  gap:var(--sp-16);
+}
+.rev-bar-meta .rev-bar-track{ flex:1; }
+.rev-bar-meta .rev-bar-value{ white-space:nowrap; }
+
+/* ---- Lollipop row: fixed-height track with a dot marker, used where
+   comparing many uneven-length labels made variable-width bars hard to
+   scan on a phone. ---- */
+.lolli-row + .lolli-row{ margin-top:var(--sp-16); }
+.lolli-name{
+  font-family:var(--font-body);
+  font-weight:500;
+  font-size:var(--text-body-sm);
+  margin-bottom:8px;
+  line-height:1.3;
+}
+.lolli-meta{
+  display:flex;
+  align-items:center;
+  gap:var(--sp-16);
+}
+.lolli-track{
+  position:relative;
+  flex:1;
+  height:2px;
+  background:var(--mist-gray);
+  border-radius:2px;
+}
+.lolli-dot{
+  position:absolute;
+  top:50%;
+  width:12px; height:12px;
+  border-radius:50%;
+  background:var(--mint-chip);
+  border:1.5px solid var(--carbon-black);
+  transform:translate(-50%,-50%);
+}
+.lolli-value{
+  font-family:var(--font-mono);
+  font-size:var(--text-body-sm);
+  white-space:nowrap;
+}
+
+/* ---- Calendar heat-strip: one mini month-grid per month, days with a
+   scheduled programme filled in. Mobile-first 3 columns, widening on
+   larger screens to match the app's existing breakpoints. ---- */
+.heat-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:var(--sp-16) var(--sp-8);
+}
+@media (min-width:640px){
+  .heat-grid{ grid-template-columns:repeat(4, 1fr); }
+}
+@media (min-width:900px){
+  .heat-grid{ grid-template-columns:repeat(6, 1fr); }
+}
+.heat-month-label{
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--slate);
+  margin-bottom:6px;
+  text-align:center;
+}
+.heat-cells{
+  display:grid;
+  grid-template-columns:repeat(7, 1fr);
+  gap:2px;
+}
+.heat-cell{
+  aspect-ratio:1;
+  border-radius:2px;
+  background:var(--mist-gray);
+}
+.heat-cell.event{
+  background:var(--mint-chip);
+  border:1px solid var(--carbon-black);
+}
+
 /* ---- Timeline: stacked list on mobile/tablet, snake flow on laptop ---- */
 .timeline{
   padding:var(--sp-24) 0 var(--sp-40);
@@ -1090,6 +1184,15 @@ body.sheet-open .cpd-bot-cta{
     <p class="prog-status" id="revStatus">Loading revenue data…</p>
   </div>
 
+  <div class="section-block" id="calendarSection">
+    <h2>CPD Calendar — 2026</h2>
+    <p class="section-sub">Every 2026 programme across the calendar year, at a glance. A filled square marks a day a programme is running.</p>
+    <div class="revenue-bars">
+      <div class="heat-grid" id="calHeatGrid"></div>
+      <p class="revenue-footnote" id="calFootnote"></p>
+    </div>
+  </div>
+
   <div class="section-block">
     <h2>Programme Lifecycle Reference</h2>
     <p class="section-sub">A general guide to how every CPD programme moves through CCPD, from planning to close-out. Select any stage below for its overview, tasks, and documents. This reference doesn't change based on the programme selected above — for a specific programme's live status, open its tracker.</p>
@@ -1310,6 +1413,65 @@ const PROGRAMME_SOURCES = {
 };
 const DEFAULT_YEAR = '2026';
 
+// ---- CPD Calendar (2026 year heat-strip) ----
+// Reads eventDate strings already present on PROGRAMME_SOURCES['2026'].programmes
+// — no separate data source, so this stays in sync automatically whenever a
+// programme's eventDate is added or corrected above.
+const CAL_MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const CAL_DAYS_IN_MONTH_2026 = [31,28,31,30,31,30,31,31,30,31,30,31]; // 2026 is not a leap year
+const CAL_MONTH_INDEX = {
+  january:0, jan:0, february:1, feb:1, march:2, mar:2, april:3, apr:3,
+  may:4, june:5, jun:5, july:6, jul:6, august:7, aug:7,
+  september:8, sep:8, sept:8, october:9, oct:9, november:10, nov:10,
+  december:11, dec:11
+};
+function parseEventDateRange(raw){
+  if(!raw) return null;
+  const cleaned = raw.replace(/\(.*?\)/g, '').trim();
+  const m = cleaned.match(/^(\d{1,2})\s*[\u2013\u2010-]?\s*(\d{1,2})?\s+([A-Za-z]+)\s+(\d{4})$/);
+  if(!m) return null;
+  const monthIdx = CAL_MONTH_INDEX[m[3].toLowerCase()];
+  if(monthIdx === undefined) return null;
+  const start = parseInt(m[1], 10);
+  const end = m[2] ? parseInt(m[2], 10) : start;
+  return { month: monthIdx, start, end };
+}
+
+function renderCalendar(){
+  const calHeatGrid = document.getElementById('calHeatGrid');
+  const calFootnote = document.getElementById('calFootnote');
+  if(!calHeatGrid) return;
+
+  const programmes = (PROGRAMME_SOURCES['2026'] && PROGRAMME_SOURCES['2026'].programmes) || [];
+  const eventDaysByMonth = Array.from({ length: 12 }, () => new Set());
+  const unscheduled = [];
+
+  programmes.forEach(p => {
+    const range = parseEventDateRange(p.eventDate);
+    if(!range){
+      unscheduled.push(p.name);
+      return;
+    }
+    for(let d = range.start; d <= range.end; d++){
+      eventDaysByMonth[range.month].add(d);
+    }
+  });
+
+  calHeatGrid.innerHTML = CAL_MONTH_NAMES.map((label, mi) => {
+    const daysInMonth = CAL_DAYS_IN_MONTH_2026[mi];
+    const eventDays = eventDaysByMonth[mi];
+    let cells = '';
+    for(let d = 1; d <= daysInMonth; d++){
+      cells += `<div class="heat-cell${eventDays.has(d) ? ' event' : ''}"></div>`;
+    }
+    return `<div><div class="heat-month-label">${label}</div><div class="heat-cells">${cells}</div></div>`;
+  }).join('');
+
+  calFootnote.textContent = unscheduled.length
+    ? `${unscheduled.join(', ')} — date not yet set, so not shown on the calendar.`
+    : '';
+}
+
 const timeline = document.getElementById('timeline');
 const yearSelect = document.getElementById('yearSelect');
 const progSelect = document.getElementById('progSelect');
@@ -1500,8 +1662,11 @@ async function loadRevenueSummary(){
 
     revBarList.innerHTML = bars.map(b => `
       <div class="rev-bar-row">
-        <div class="rev-bar-head"><span class="rev-bar-name">${b.name}</span><span class="rev-bar-value">${formatRM(b.amount)}</span></div>
-        <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${max ? (b.amount / max * 100) : 0}%;"></div></div>
+        <div class="rev-bar-name">${b.name}</div>
+        <div class="rev-bar-meta">
+          <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${max ? (b.amount / max * 100) : 0}%;"></div></div>
+          <div class="rev-bar-value">${formatRM(b.amount)}</div>
+        </div>
       </div>
     `).join('');
 
@@ -1525,9 +1690,12 @@ async function loadRevenueSummary(){
 
     // Revenue per participant, by programme
     revPerPartBarList.innerHTML = perParticipantBars.map(b => `
-      <div class="rev-bar-row">
-        <div class="rev-bar-head"><span class="rev-bar-name">${b.name}</span><span class="rev-bar-value">${formatRM(b.perParticipant)}</span></div>
-        <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${perPartMax ? (b.perParticipant / perPartMax * 100) : 0}%;"></div></div>
+      <div class="lolli-row">
+        <div class="lolli-name">${b.name}</div>
+        <div class="lolli-meta">
+          <div class="lolli-track"><div class="lolli-dot" style="left:${perPartMax ? (b.perParticipant / perPartMax * 100) : 0}%;"></div></div>
+          <div class="lolli-value">${formatRM(b.perParticipant)}</div>
+        </div>
       </div>
     `).join('');
 
@@ -1659,6 +1827,7 @@ yearSelect.addEventListener('change', ()=>{
 
 loadProgrammeIndex(DEFAULT_YEAR);
 loadRevenueSummary();
+renderCalendar();
 
 function typeClass(type){
   if(type==='milestone') return 'milestone';
