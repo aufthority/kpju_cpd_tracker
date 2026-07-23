@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CPD Tracker — KPJU School of Pharmacy</title>
+<title>CPD Programme Timeline — KPJU School of Pharmacy</title>
 
 <!-- Link preview (Open Graph / Twitter Card) -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="CPD Tracker — KPJU School of Pharmacy">
+<meta property="og:title" content="CPD Programme Timeline — KPJU School of Pharmacy">
 <meta property="og:description" content="A centralised dashboard to plan, track and follow every CPD — start to finish.">
 <meta property="og:image" content="https://kpjucpdtracker.vercel.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://kpjucpdtracker.vercel.app/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="CPD Tracker — KPJU School of Pharmacy">
+<meta name="twitter:title" content="CPD Programme Timeline — KPJU School of Pharmacy">
 <meta name="twitter:description" content="A centralised dashboard to plan, track and follow every CPD — start to finish.">
 <meta name="twitter:image" content="https://kpjucpdtracker.vercel.app/og-image.png">
 
@@ -346,6 +346,82 @@ h1{
 .legend-swatch.deadline{ background:var(--voltage-yellow); border:1px solid var(--carbon-black); }
 .legend-swatch.event{ background:var(--mint-chip); }
 .legend-swatch.post{ background:var(--carbon-black); }
+
+/* ---- Revenue Snapshot ---- */
+.revenue-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+  gap:var(--sp-16);
+  margin-bottom:var(--sp-16);
+}
+.revenue-card{
+  background:var(--paper-white);
+  border:1.5px solid var(--ash);
+  border-radius:8px;
+  padding:var(--sp-16);
+}
+.revenue-card.flag{
+  background:var(--voltage-yellow);
+  border-color:var(--carbon-black);
+}
+.revenue-card-label{
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--slate);
+  margin-bottom:6px;
+}
+.revenue-card-value{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:var(--text-heading-sm);
+  color:var(--carbon-black);
+  line-height:1.15;
+}
+.revenue-bars{
+  background:var(--paper-white);
+  border:1.5px solid var(--ash);
+  border-radius:8px;
+  padding:var(--sp-16) var(--sp-24);
+}
+.revenue-bars-label{
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--slate);
+  margin-bottom:var(--sp-16);
+}
+.rev-bar-row + .rev-bar-row{ margin-top:var(--sp-16); }
+.rev-bar-head{
+  display:flex;
+  justify-content:space-between;
+  font-family:var(--font-body);
+  font-size:var(--text-body-sm);
+  margin-bottom:4px;
+}
+.rev-bar-name{ font-weight:500; }
+.rev-bar-value{ font-family:var(--font-mono); font-size:var(--text-body-sm); }
+.rev-bar-track{
+  height:8px;
+  background:var(--mist-gray);
+  border-radius:4px;
+  overflow:hidden;
+}
+.rev-bar-fill{
+  height:100%;
+  background:var(--mint-chip);
+  border-radius:4px;
+}
+.revenue-footnote{
+  margin:var(--sp-16) 0 0;
+  padding-top:var(--sp-8);
+  border-top:1px solid var(--warm-canvas);
+  font-family:var(--font-body);
+  font-size:var(--text-caption);
+  color:var(--smoke);
+}
 
 /* ---- Timeline: stacked list on mobile/tablet, snake flow on laptop ---- */
 .timeline{
@@ -881,12 +957,12 @@ body.sheet-open .cpd-bot-cta{
 </div>
 
 <div class="masthead-utility">
-  <p class="eyebrow">KPJU School of Pharmacy — CPD Committee</p>
+  <p class="eyebrow">KPJU School of Pharmacy — CCPD</p>
 </div>
 
 <div class="page">
   <header>
-    <h1>CPD Tracker</h1>
+    <h1>CPD Programme Timeline</h1>
     <p class="sub">Select a stage to view its overview, required tasks, and documents — from first planning through to event day.</p>
   </header>
 
@@ -918,6 +994,31 @@ body.sheet-open .cpd-bot-cta{
     <div class="legend-item"><span class="legend-swatch deadline"></span>Fixed deadline</div>
     <div class="legend-item"><span class="legend-swatch event"></span>Event day</div>
     <div class="legend-item"><span class="legend-swatch post"></span>Post-event follow-up</div>
+  </div>
+
+  <div class="section-block" id="revenueSection">
+    <h2>Revenue Snapshot</h2>
+    <p class="section-sub">Total revenue booked so far across CPD programmes, pulled live from the Revenue Summary sheet. Programmes with no revenue recorded yet, and any figures that need checking, are called out separately rather than folded into the total.</p>
+    <div class="revenue-grid">
+      <div class="revenue-card">
+        <div class="revenue-card-label">Total revenue (validated)</div>
+        <div class="revenue-card-value" id="revTotal">—</div>
+      </div>
+      <div class="revenue-card">
+        <div class="revenue-card-label">Programmes with revenue</div>
+        <div class="revenue-card-value" id="revCount">—</div>
+      </div>
+      <div class="revenue-card flag" id="revFlagCard" style="display:none;">
+        <div class="revenue-card-label">Needs review</div>
+        <div class="revenue-card-value" id="revFlagValue" style="font-size:var(--text-subheading);">—</div>
+      </div>
+    </div>
+    <div class="revenue-bars">
+      <div class="revenue-bars-label">By programme</div>
+      <div id="revBarList"></div>
+      <p class="revenue-footnote" id="revFootnote"></p>
+    </div>
+    <p class="prog-status" id="revStatus">Loading revenue data…</p>
   </div>
 
   <div class="section-block">
@@ -1198,6 +1299,127 @@ function setStatus(msg, isError){
   progStatus.classList.toggle('is-error', !!isError);
 }
 
+// ---- Revenue Snapshot ----
+// Set this to the "Publish to web" CSV link for the Revenue Summary tab:
+// File > Share > Publish to web > select "Revenue Summary" > CSV > Publish.
+// Until it's set, the widget shows a plain "not configured yet" message
+// instead of failing silently or showing a stale/wrong number.
+const REVENUE_CSV_URL = 'PASTE_REVENUE_SUMMARY_PUBLISHED_CSV_URL_HERE';
+
+const revStatus = document.getElementById('revStatus');
+const revTotalEl = document.getElementById('revTotal');
+const revCountEl = document.getElementById('revCount');
+const revFlagCard = document.getElementById('revFlagCard');
+const revFlagValue = document.getElementById('revFlagValue');
+const revBarList = document.getElementById('revBarList');
+const revFootnote = document.getElementById('revFootnote');
+
+function setRevStatus(msg, isError){
+  revStatus.textContent = msg;
+  revStatus.classList.toggle('is-error', !!isError);
+}
+
+function formatRM(n){
+  return 'RM ' + n.toLocaleString('en-MY', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+// A value that survived Sheets' auto-date-detection reads back from CSV
+// looking like "1/4/1928" — a plain day/month/year string, not a currency
+// figure. Treat anything shaped like that as suspect rather than silently
+// summing it into the total (this is exactly how the COLDCHAIN 23JULY
+// figure went wrong upstream).
+function looksLikeDate(raw){
+  return /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(String(raw).trim());
+}
+
+function parseAmount(raw){
+  const cleaned = String(raw).replace(/[^0-9.\-]/g, '');
+  if(cleaned === '' || cleaned === '-') return NaN;
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? NaN : n;
+}
+
+async function loadRevenueSummary(){
+  if(!REVENUE_CSV_URL || REVENUE_CSV_URL.indexOf('PASTE_') === 0){
+    setRevStatus('Revenue source not configured yet.', true);
+    return;
+  }
+
+  setRevStatus('Loading revenue data…');
+
+  try{
+    const res = await fetch(REVENUE_CSV_URL, { cache:'no-store' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if(rows.length < 2){ throw new Error('Revenue sheet returned no data rows'); }
+
+    const headers = rows[0];
+    const nameCol = findCol(headers, ['Quotation / Client','Quotation/Client','Client','Programme','Name']);
+    const amountCol = findCol(headers, ['Amount (RM)','Amount','AmountRM']);
+    if(nameCol === -1 || amountCol === -1){
+      throw new Error('Expected columns not found in Revenue Summary sheet header');
+    }
+
+    const bars = [];
+    const zeroNames = [];
+    const flagged = [];
+    let total = 0;
+
+    rows.slice(1).forEach(r=>{
+      const name = (r[nameCol] || '').trim();
+      const rawAmount = (r[amountCol] || '').trim();
+      if(!name) return;
+      if(/^grand total/i.test(name)) return;
+      if(/^last updated/i.test(name)) return;
+      if(name.toUpperCase() === 'TEMPLATE') return;
+
+      if(looksLikeDate(rawAmount)){
+        flagged.push(name);
+        return;
+      }
+      const amount = parseAmount(rawAmount);
+      if(isNaN(amount)) return;
+
+      if(amount > 0){
+        bars.push({ name, amount });
+        total += amount;
+      }else{
+        zeroNames.push(name);
+      }
+    });
+
+    bars.sort((a,b)=> b.amount - a.amount);
+    const max = bars.length ? bars[0].amount : 0;
+
+    revTotalEl.textContent = formatRM(total);
+    revCountEl.innerHTML = `${bars.length} <span style="font-size:16px;color:var(--smoke);">of ${bars.length + zeroNames.length + flagged.length}</span>`;
+
+    revBarList.innerHTML = bars.map(b => `
+      <div class="rev-bar-row">
+        <div class="rev-bar-head"><span class="rev-bar-name">${b.name}</span><span class="rev-bar-value">${formatRM(b.amount)}</span></div>
+        <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${max ? (b.amount / max * 100) : 0}%;"></div></div>
+      </div>
+    `).join('');
+
+    revFootnote.textContent = zeroNames.length
+      ? `${zeroNames.join(', ')} — no revenue recorded yet.`
+      : '';
+
+    if(flagged.length){
+      revFlagCard.style.display = '';
+      revFlagValue.textContent = flagged.join(', ');
+    }else{
+      revFlagCard.style.display = 'none';
+    }
+
+    setRevStatus(`Updated from the Revenue Summary sheet · ${bars.length} programme${bars.length===1?'':'s'} with revenue.`);
+  }catch(err){
+    console.error('Revenue summary load failed:', err);
+    setRevStatus('Couldn\u2019t load revenue data right now. Please try refreshing the page, or contact Auf if this keeps happening.', true);
+  }
+}
+
 function populateDropdown(programmes){
   progSelect.innerHTML = '';
   const placeholder = document.createElement('option');
@@ -1310,6 +1532,7 @@ yearSelect.addEventListener('change', ()=>{
 });
 
 loadProgrammeIndex(DEFAULT_YEAR);
+loadRevenueSummary();
 
 function typeClass(type){
   if(type==='milestone') return 'milestone';
