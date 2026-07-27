@@ -180,11 +180,24 @@ body{ padding-top:52px; }
     gap:2px;
   }
   .nav-link{
-    padding:16px 12px;
+    position:relative;
+    padding:16px 16px 16px 22px;
     border-top:none;
-    border-radius:999px;
   }
-  .nav-link:hover{ background:var(--mist-gray); }
+  .nav-link:hover{ background:none; color:var(--carbon-black); }
+  .nav-link.active{
+    background:none;
+  }
+  .nav-link.active::before{
+    content:'';
+    position:absolute;
+    left:6px;
+    top:50%;
+    transform:translateY(-50%);
+    width:4px;
+    height:16px;
+    background:var(--voltage-yellow);
+  }
 }
 
 /* ---- Meet the Team: pill trigger + popup card, always visible on the right ---- */
