@@ -77,6 +77,10 @@ html,body{
   overflow-x:hidden;
 }
 
+/* Clearance for the fixed nav bar (position:fixed, out of normal flow) so
+   it doesn't sit on top of the masthead/header on first load. */
+body{ padding-top:52px; }
+
 :focus-visible{
   outline:2px solid var(--carbon-black);
   outline-offset:2px;
@@ -96,24 +100,197 @@ html,body{
   padding:0 var(--sp-16);
 }
 
-/* ---- Header: centered masthead, NYT-style structure ---- */
-.masthead-utility{
+/* ---- Section nav ----
+   Mobile (<1024px): compact fixed bar with a "current section" dropdown
+   trigger on the left; tapping it reveals the 4 links stacked as a panel.
+   Desktop/laptop (>=1024px): a single-row bar spanning the full browser
+   width, links inline, no dropdown. Both keep "Meet the Team" always
+   visible at the right end — it's a separate feature, not a page section. ---- */
+.section-nav{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  z-index:1000;
+  background:var(--paper-white);
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
   display:flex;
-  justify-content:center;
-  padding:var(--sp-16) 0;
-  border-bottom:1px solid var(--ash);
+  align-items:center;
+  justify-content:space-between;
+  padding:0 var(--sp-16);
 }
-
-.eyebrow{
+.nav-mobile-trigger{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:none;
+  border:none;
+  cursor:pointer;
   font-family:var(--font-mono);
   font-size:var(--text-caption);
-  letter-spacing:0.04em;
-  text-transform:uppercase;
+  font-weight:600;
+  color:var(--carbon-black);
+  padding:14px 4px;
+}
+.nav-mobile-trigger svg{
+  width:14px; height:14px;
+  transition:transform 0.15s ease;
+}
+.nav-mobile-trigger[aria-expanded="true"] svg{ transform:rotate(180deg); }
+
+.nav-links-wrap{
+  display:none;
+  position:absolute;
+  top:100%;
+  left:0;
+  width:100%;
+  flex-direction:column;
+  background:var(--paper-white);
+  box-shadow:0 8px 20px rgba(0,0,0,0.16);
+}
+.nav-links-wrap.open{ display:flex; }
+.nav-link{
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  letter-spacing:0.02em;
+  white-space:nowrap;
   color:var(--slate);
-  margin:0;
-  font-weight:500;
+  text-decoration:none;
+  padding:14px 16px;
+  border-top:1px solid var(--mist-gray);
+  transition:background 0.15s ease, color 0.15s ease;
+}
+.nav-links-wrap .nav-link:first-child{ border-top:none; }
+.nav-link:hover{ background:var(--mist-gray); color:var(--carbon-black); }
+.nav-link.active{
+  background:var(--voltage-yellow);
+  color:var(--carbon-black);
+  font-weight:600;
 }
 
+@media (min-width:1024px){
+  .nav-mobile-trigger{ display:none; }
+  .nav-links-wrap{
+    display:flex;
+    position:static;
+    width:auto;
+    flex-direction:row;
+    background:none;
+    box-shadow:none;
+    gap:2px;
+  }
+  .nav-link{
+    padding:16px 12px;
+    border-top:none;
+    border-radius:999px;
+  }
+  .nav-link:hover{ background:var(--mist-gray); }
+}
+
+/* ---- Meet the Team: pill trigger + popup card, always visible on the right ---- */
+.team-trigger-wrap{
+  position:relative;
+  flex-shrink:0;
+}
+.team-pill{
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  font-weight:600;
+  background:none;
+  border:none;
+  color:var(--carbon-black);
+  border-radius:999px;
+  padding:14px 4px;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background 0.15s ease;
+}
+.team-pill:hover{ background:var(--mist-gray); }
+
+.team-card{
+  position:absolute;
+  top:calc(100% + 10px);
+  right:0;
+  width:300px;
+  max-width:calc(100vw - 32px);
+  background:var(--paper-white);
+  border:1.5px solid var(--carbon-black);
+  border-radius:10px;
+  padding:var(--sp-24) var(--sp-16);
+  box-shadow:0 8px 24px rgba(0,0,0,0.12);
+  display:none;
+  z-index:1010;
+  text-align:left;
+}
+.team-card.open{ display:block; }
+.team-card-title{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:19px;
+  margin:0 0 var(--sp-16);
+}
+.team-member + .team-member{
+  margin-top:var(--sp-16);
+  padding-top:var(--sp-16);
+  border-top:1px solid var(--mist-gray);
+}
+.team-member-name{
+  font-family:var(--font-body);
+  font-weight:600;
+  font-size:14px;
+  margin-bottom:2px;
+}
+.team-email-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:6px;
+}
+.team-email{
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  color:var(--slate);
+}
+.team-copy-btn{
+  background:none;
+  border:none;
+  cursor:pointer;
+  padding:3px;
+  border-radius:4px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--slate);
+  transition:background 0.15s ease, color 0.15s ease;
+  position:relative;
+}
+.team-copy-btn:hover{ background:var(--mist-gray); color:var(--carbon-black); }
+.team-copy-btn svg{ width:13px; height:13px; }
+.team-copy-btn .copied-tag{
+  position:absolute;
+  bottom:calc(100% + 4px);
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--carbon-black);
+  color:var(--paper-white);
+  font-family:var(--font-mono);
+  font-size:10px;
+  padding:3px 7px;
+  border-radius:4px;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.15s ease;
+}
+.team-copy-btn.copied .copied-tag{ opacity:1; }
+.team-member-desc{
+  font-size:13px;
+  color:var(--graphite);
+  line-height:1.45;
+  margin:0;
+}
+
+/* ---- Header: centered masthead, NYT-style structure ---- */
 header{
   padding:var(--sp-40) 0 var(--sp-24);
   text-align:center;
@@ -1075,14 +1252,21 @@ footer.note a:hover, footer.note a:focus-visible{
   outline:none;
 }
 
-/* Push page content down when the banner is showing, so it doesn't
-   sit underneath the fixed bar. Toggled via JS on <body>. */
-body.has-install-banner .masthead-utility{
-  margin-top:44px;
+/* Push the fixed nav bar down when the install banner is showing, so the
+   banner (which sits above it, z-index 1100) doesn't cover it — and add
+   matching extra clearance to the page content. Toggled via JS on <body>. */
+body.has-install-banner .section-nav{
+  top:44px;
+}
+body.has-install-banner{
+  padding-top:96px;
 }
 @media (max-width:640px){
-  body.has-install-banner .masthead-utility{
-    margin-top:64px;
+  body.has-install-banner .section-nav{
+    top:64px;
+  }
+  body.has-install-banner{
+    padding-top:116px;
   }
   .install-banner-btn{ font-size:12px; padding:10px 12px; }
 }
@@ -1153,17 +1337,60 @@ body.sheet-open .cpd-bot-cta{
   <button class="install-banner-close" id="installBannerClose" type="button" aria-label="Dismiss">&times;</button>
 </div>
 
-<div class="masthead-utility">
-  <p class="eyebrow">KPJU School of Pharmacy — CPD Committee</p>
-</div>
-
 <div class="page">
   <header>
     <h1>KPJU-SOP CPD Tracker</h1>
     <p class="sub">Select a stage to view its overview, required tasks, and documents — from first planning through to event day.</p>
   </header>
 
-  <div class="section-block">
+  <nav class="section-nav" id="sectionNav">
+    <button class="nav-mobile-trigger" id="navMobileTrigger" type="button" aria-expanded="false" aria-controls="navLinksWrap">
+      <span id="navMobileLabel">Your CPD Programmes</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="nav-links-wrap" id="navLinksWrap">
+      <a href="#programmesSection" class="nav-link active" data-target="programmesSection">Your CPD Programmes</a>
+      <a href="#revenueSection" class="nav-link" data-target="revenueSection">Revenue Snapshot</a>
+      <a href="#calendarSection" class="nav-link" data-target="calendarSection">CPD Calendar — 2026</a>
+      <a href="#lifecycleSection" class="nav-link" data-target="lifecycleSection">Programme Lifecycle Reference</a>
+    </div>
+    <div class="team-trigger-wrap">
+      <button class="team-pill" id="teamTrigger" type="button">Meet the Team</button>
+      <div class="team-card" id="teamCard">
+        <div class="team-card-title">Meet the SOP CPD Team</div>
+
+        <div class="team-member">
+          <div class="team-member-name">RPh. Fareza Hanum MR, MMPS</div>
+          <div class="team-email-row">
+            <span class="team-email">ucn.fareza@kpju.edu.my</span>
+            <button class="team-copy-btn" data-email="ucn.fareza@kpju.edu.my" aria-label="Copy email" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span class="copied-tag">Copied</span>
+            </button>
+          </div>
+          <p class="team-member-desc">Built and maintains the tracker's extensive data behind the scenes — keeping every programme accurate and up to date, from quality compliance to scheduling.</p>
+        </div>
+
+        <div class="team-member">
+          <div class="team-member-name">Auf Ali</div>
+          <div class="team-email-row">
+            <span class="team-email">ucn.auf@kpju.edu.my</span>
+            <button class="team-copy-btn" data-email="ucn.auf@kpju.edu.my" aria-label="Copy email" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span class="copied-tag">Copied</span>
+            </button>
+          </div>
+          <p class="team-member-desc">Built this site from the ground up, wiring it to the live Sheets data with Claude AI, and keeping it running on GitHub + Vercel.</p>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="section-block" id="programmesSection">
     <h2>Your CPD Programmes</h2>
     <p class="section-sub">Select a programme to open its tracker — see exactly which tasks are done and where it stands.</p>
     <div class="prog-picker">
@@ -1314,7 +1541,7 @@ body.sheet-open .cpd-bot-cta{
     </div>
   </div>
 
-  <div class="section-block">
+  <div class="section-block" id="lifecycleSection">
     <h2>Programme Lifecycle Reference</h2>
     <p class="section-sub">A general guide to how every CPD programme moves through CCPD, from planning to close-out. Select any stage below for its overview, tasks, and documents. This reference doesn't change based on the programme selected above — for a specific programme's live status, open its tracker.</p>
   </div>
@@ -2200,6 +2427,92 @@ document.addEventListener('keydown', (e)=>{
   window.addEventListener('appinstalled', ()=>{
     hideBanner();
     deferredPrompt = null;
+  });
+})();
+
+// ---- Section nav: mobile dropdown toggle, smooth-scroll to target
+// (offset by the fixed bar's own height), and highlight the active link
+// as the user scrolls — also syncing the mobile trigger's label. ----
+(function(){
+  const nav = document.getElementById('sectionNav');
+  const mobileTrigger = document.getElementById('navMobileTrigger');
+  const mobileLabel = document.getElementById('navMobileLabel');
+  const linksWrap = document.getElementById('navLinksWrap');
+  if(!nav || !linksWrap) return;
+  const links = linksWrap.querySelectorAll('.nav-link');
+  const sections = Array.from(links)
+    .map(link => document.getElementById(link.dataset.target))
+    .filter(Boolean);
+
+  if(mobileTrigger){
+    mobileTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = linksWrap.classList.toggle('open');
+      mobileTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', (e) => {
+      if(!nav.contains(e.target)){
+        linksWrap.classList.remove('open');
+        mobileTrigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  links.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.getElementById(link.dataset.target);
+      if(!target) return;
+      const navClearance = nav.offsetHeight + 16;
+      const y = target.getBoundingClientRect().top + window.scrollY - navClearance;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+      linksWrap.classList.remove('open');
+      if(mobileTrigger) mobileTrigger.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        links.forEach(l => l.classList.remove('active'));
+        const activeLink = linksWrap.querySelector(`.nav-link[data-target="${entry.target.id}"]`);
+        if(activeLink){
+          activeLink.classList.add('active');
+          if(mobileLabel) mobileLabel.textContent = activeLink.textContent;
+        }
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+})();
+
+// ---- Meet the Team: pill toggle + copy-to-clipboard on each email ----
+(function(){
+  const trigger = document.getElementById('teamTrigger');
+  const card = document.getElementById('teamCard');
+  const wrap = document.querySelector('.team-trigger-wrap');
+  if(!trigger || !card || !wrap) return;
+
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    card.classList.toggle('open');
+  });
+
+  document.addEventListener('click', (e) => {
+    if(!wrap.contains(e.target)){
+      card.classList.remove('open');
+    }
+  });
+
+  card.querySelectorAll('.team-copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const email = btn.dataset.email;
+      navigator.clipboard.writeText(email).then(() => {
+        btn.classList.add('copied');
+        setTimeout(() => btn.classList.remove('copied'), 1500);
+      });
+    });
   });
 })();
 
