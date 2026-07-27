@@ -759,43 +759,77 @@ h1{
   white-space:nowrap;
 }
 
-/* ---- Calendar heat-strip: one mini month-grid per month, days with a
-   scheduled programme filled in. Mobile-first 3 columns, widening on
-   larger screens to match the app's existing breakpoints. ---- */
-.heat-grid{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:var(--sp-16) var(--sp-8);
+/* ---- Calendar agenda list: chronological, grouped by month, scrollable
+   within a fixed height so the section stays in view on a laptop screen.
+   Programmes with no eventDate are grouped into a trailing "Date TBA"
+   block instead of a separate footnote. ---- */
+.agenda-panel{
+  background:var(--paper-white);
+  border:1px solid var(--ash);
+  border-radius:16px;
+  padding:var(--sp-24);
+  text-align:left;
 }
-@media (min-width:640px){
-  .heat-grid{ grid-template-columns:repeat(4, 1fr); }
+.agenda-scroll{
+  max-height:60vh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding-right:6px;
+  scrollbar-width:thin;
+  scrollbar-color:var(--ash) transparent;
 }
-@media (min-width:900px){
-  .heat-grid{ grid-template-columns:repeat(6, 1fr); }
-}
-.heat-month-label{
+.agenda-scroll::-webkit-scrollbar{ width:6px; }
+.agenda-scroll::-webkit-scrollbar-track{ background:transparent; }
+.agenda-scroll::-webkit-scrollbar-thumb{ background:var(--ash); border-radius:4px; }
+.agenda-scroll::-webkit-scrollbar-thumb:hover{ background:var(--smoke); }
+
+.agenda-month{ margin-bottom:var(--sp-16); }
+.agenda-month:last-child{ margin-bottom:0; }
+.agenda-month-label{
   font-family:var(--font-mono);
   font-size:var(--text-caption);
-  letter-spacing:0.04em;
   text-transform:uppercase;
+  letter-spacing:0.06em;
   color:var(--slate);
-  margin-bottom:6px;
-  text-align:center;
+  padding:6px 4px;
+  margin-bottom:2px;
+  position:sticky;
+  top:0;
+  background:var(--paper-white);
+  border-bottom:1px solid var(--ash);
+  z-index:1;
 }
-.heat-cells{
-  display:grid;
-  grid-template-columns:repeat(7, 1fr);
-  gap:2px;
+.agenda-row{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:12px 4px;
+  border-bottom:1px solid var(--mist-gray);
 }
-.heat-cell{
-  aspect-ratio:1;
-  border-radius:2px;
-  background:var(--mist-gray);
+.agenda-row:last-child{ border-bottom:none; }
+.agenda-date{
+  font-family:var(--font-mono);
+  font-size:var(--text-body-sm);
+  color:var(--slate);
+  flex:0 0 96px;
 }
-.heat-cell.event{
-  background:var(--mint-chip);
-  border:1px solid var(--carbon-black);
+.agenda-name{ font-weight:600; font-size:var(--text-body); flex:1 1 auto; }
+.agenda-status{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-family:var(--font-mono);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.03em;
+  padding:3px 8px;
+  border-radius:20px;
+  white-space:nowrap;
+  flex:0 0 auto;
 }
+.agenda-status.executed{ background:var(--mint-chip); color:var(--graphite); }
+.agenda-status.upcoming{ background:var(--paper-white); border:1.5px solid var(--voltage-yellow); color:var(--graphite); }
+.agenda-status.tba{ background:var(--mist-gray); color:var(--smoke); border:1px dashed var(--ash); }
 
 /* ---- Timeline: stacked list on mobile/tablet, snake flow on laptop ---- */
 .timeline{
@@ -1534,10 +1568,9 @@ body.sheet-open .cpd-bot-cta{
 
   <div class="section-block" id="calendarSection">
     <h2>CPD Calendar — 2026</h2>
-    <p class="section-sub">Every 2026 programme across the calendar year, at a glance. A filled square marks a day a programme is running.</p>
-    <div class="revenue-bars">
-      <div class="heat-grid" id="calHeatGrid"></div>
-      <p class="revenue-footnote" id="calFootnote"></p>
+    <p class="section-sub">Every 2026 programme in one scrollable list, grouped by month. Programmes without a confirmed date are marked TBA and sit at the bottom.</p>
+    <div class="agenda-panel">
+      <div class="agenda-scroll" id="calAgendaScroll"></div>
     </div>
   </div>
 
@@ -1766,7 +1799,6 @@ const DEFAULT_YEAR = '2026';
 // — no separate data source, so this stays in sync automatically whenever a
 // programme's eventDate is added or corrected above.
 const CAL_MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-const CAL_DAYS_IN_MONTH_2026 = [31,28,31,30,31,30,31,31,30,31,30,31]; // 2026 is not a leap year
 const CAL_MONTH_INDEX = {
   january:0, jan:0, february:1, feb:1, march:2, mar:2, april:3, apr:3,
   may:4, june:5, jun:5, july:6, jul:6, august:7, aug:7,
@@ -1785,39 +1817,72 @@ function parseEventDateRange(raw){
   return { month: monthIdx, start, end };
 }
 
+const CAL_MONTH_NAMES_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function agendaStatusChip(status){
+  if(status === 'executed') return '<span class="agenda-status executed">✓ Executed</span>';
+  if(status === 'upcoming') return '<span class="agenda-status upcoming">○ Upcoming</span>';
+  return '<span class="agenda-status tba">TBA</span>';
+}
+
 function renderCalendar(){
-  const calHeatGrid = document.getElementById('calHeatGrid');
-  const calFootnote = document.getElementById('calFootnote');
-  if(!calHeatGrid) return;
+  const calAgendaScroll = document.getElementById('calAgendaScroll');
+  if(!calAgendaScroll) return;
 
   const programmes = (PROGRAMME_SOURCES['2026'] && PROGRAMME_SOURCES['2026'].programmes) || [];
-  const eventDaysByMonth = Array.from({ length: 12 }, () => new Set());
-  const unscheduled = [];
+  const today = new Date();
+  const scheduled = [];
+  const tba = [];
 
   programmes.forEach(p => {
     const range = parseEventDateRange(p.eventDate);
     if(!range){
-      unscheduled.push(p.name);
+      tba.push(p.name);
       return;
     }
-    for(let d = range.start; d <= range.end; d++){
-      eventDaysByMonth[range.month].add(d);
-    }
+    const startDate = new Date(2026, range.month, range.start);
+    const endDate = new Date(2026, range.month, range.end);
+    scheduled.push({
+      name: p.name,
+      month: range.month,
+      startDate, endDate,
+      status: endDate < today ? 'executed' : 'upcoming'
+    });
   });
 
-  calHeatGrid.innerHTML = CAL_MONTH_NAMES.map((label, mi) => {
-    const daysInMonth = CAL_DAYS_IN_MONTH_2026[mi];
-    const eventDays = eventDaysByMonth[mi];
-    let cells = '';
-    for(let d = 1; d <= daysInMonth; d++){
-      cells += `<div class="heat-cell${eventDays.has(d) ? ' event' : ''}"></div>`;
-    }
-    return `<div><div class="heat-month-label">${label}</div><div class="heat-cells">${cells}</div></div>`;
+  scheduled.sort((a, b) => a.startDate - b.startDate);
+
+  const byMonth = {};
+  scheduled.forEach(p => { (byMonth[p.month] = byMonth[p.month] || []).push(p); });
+  const months = Object.keys(byMonth).map(Number).sort((a, b) => a - b);
+
+  let html = months.map(mi => {
+    const rows = byMonth[mi].map(p => `
+      <div class="agenda-row">
+        <div class="agenda-date">${CAL_MONTH_NAMES[mi]} ${p.startDate.getDate()}${p.endDate.getDate() !== p.startDate.getDate() ? '–' + p.endDate.getDate() : ''}</div>
+        <div class="agenda-name">${p.name}</div>
+        ${agendaStatusChip(p.status)}
+      </div>`).join('');
+    return `<div class="agenda-month">
+      <div class="agenda-month-label">${CAL_MONTH_NAMES_FULL[mi]} 2026</div>
+      ${rows}
+    </div>`;
   }).join('');
 
-  calFootnote.textContent = unscheduled.length
-    ? `${unscheduled.join(', ')} — date not yet set, so not shown on the calendar.`
-    : '';
+  if(tba.length){
+    const tbaRows = tba.map(name => `
+      <div class="agenda-row">
+        <div class="agenda-date">—</div>
+        <div class="agenda-name">${name}</div>
+        ${agendaStatusChip('tba')}
+      </div>`).join('');
+    html += `<div class="agenda-month">
+      <div class="agenda-month-label">Date TBA</div>
+      ${tbaRows}
+    </div>`;
+  }
+
+  calAgendaScroll.innerHTML = html || '<p style="text-align:center;color:var(--smoke)">No programmes found.</p>';
 }
 
 const timeline = document.getElementById('timeline');
