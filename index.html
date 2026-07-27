@@ -844,6 +844,18 @@ h1{
 .agenda-status.upcoming{ background:var(--paper-white); border:1.5px solid var(--voltage-yellow); color:var(--graphite); }
 .agenda-status.tba{ background:var(--mist-gray); color:var(--smoke); border:1px dashed var(--ash); }
 
+/* Below ~600px, a long programme name plus its date and status chip no
+   longer fit on one line. Rather than shrink the chip or truncate the
+   name, reflow to two lines: date + status chip on line 1 (chip pushed
+   to the right), full programme name on line 2. Order is set with the
+   `order` property only — markup stays date/name/status for a11y. */
+@media (max-width:599px){
+  .agenda-row{ flex-wrap:wrap; row-gap:6px; }
+  .agenda-date{ order:1; }
+  .agenda-status{ order:2; margin-left:auto; }
+  .agenda-name{ order:3; flex:1 1 100%; }
+}
+
 /* ---- Timeline: stacked list on mobile/tablet, snake flow on laptop ---- */
 .timeline{
   padding:var(--sp-24) 0 var(--sp-40);
