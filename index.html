@@ -475,6 +475,75 @@ h1{
 .rev-bar-meta .rev-bar-track{ flex:1; }
 .rev-bar-meta .rev-bar-value{ white-space:nowrap; }
 
+/* ---- Revenue Snapshot — desktop layout (>=1024px only) ----
+   Laptop/desktop/landscape-tablet get a single table (programme, revenue,
+   RM/participant, sponsor split) plus a slim rail with the two rings,
+   replacing the four stacked mobile cards so the section fits one
+   laptop screen without excess scrolling. Phone/portrait keeps the
+   original stacked cards below (".revenue-mobile-only"). ---- */
+.revenue-desktop{ display:none; }
+.revenue-mobile-only{ display:block; }
+@media (min-width:1024px){
+  .revenue-mobile-only{ display:none; }
+  .revenue-desktop{ display:block; }
+}
+.revenue-desktop-layout{
+  display:grid;
+  grid-template-columns:1fr 260px;
+  gap:var(--sp-16);
+  align-items:start;
+}
+.revenue-rail{
+  display:flex;
+  flex-direction:column;
+  gap:var(--sp-16);
+}
+.rail-card{ text-align:center; }
+.rail-card .ring-actual{ margin-top:var(--sp-8); }
+.rail-legend{ justify-content:center; }
+.rev-table{
+  width:100%;
+  border-collapse:collapse;
+}
+.rev-table th{
+  font-family:var(--font-mono);
+  font-size:var(--text-caption);
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--slate);
+  text-align:left;
+  font-weight:500;
+  padding:0 var(--sp-8) var(--sp-8) 0;
+  border-bottom:1px solid var(--ash);
+}
+.rev-table td{
+  padding:var(--sp-8) var(--sp-8) var(--sp-8) 0;
+  vertical-align:middle;
+  font-family:var(--font-body);
+  font-size:var(--text-body-sm);
+}
+.rev-table tbody tr + tr td{ border-top:1px solid var(--mist-gray); }
+.rev-table-name{ font-weight:500; }
+.rev-table-revenue{ min-width:180px; }
+.rev-table-bar-track{
+  height:6px;
+  background:var(--mist-gray);
+  border-radius:3px;
+  overflow:hidden;
+  margin-bottom:4px;
+}
+.rev-table-bar-fill{ height:100%; background:var(--mint-chip); border-radius:3px; }
+.rev-table-amount{ font-family:var(--font-mono); font-size:var(--text-caption); color:var(--slate); }
+.rev-table-perpart{ font-family:var(--font-mono); font-size:var(--text-body-sm); white-space:nowrap; }
+.split-bar{
+  height:6px;
+  border-radius:3px;
+  overflow:hidden;
+  display:flex;
+  min-width:70px;
+}
+.split-nodata{ font-family:var(--font-mono); font-size:var(--text-caption); color:var(--smoke); }
+
 /* ---- Lollipop row: fixed-height track with a dot marker, used where
    comparing many uneven-length labels made variable-width bars hard to
    scan on a phone. ---- */
@@ -1141,12 +1210,12 @@ body.sheet-open .cpd-bot-cta{
         <div class="revenue-card-value" id="revFlagValue" style="font-size:var(--text-subheading);">—</div>
       </div>
     </div>
-    <div class="revenue-bars">
+    <div class="revenue-bars revenue-mobile-only">
       <div class="revenue-bars-label">By programme</div>
       <div id="revBarList"></div>
       <p class="revenue-footnote" id="revFootnote"></p>
     </div>
-    <div class="revenue-bars">
+    <div class="revenue-bars revenue-mobile-only">
       <div class="revenue-bars-label">Target vs actual (RM 1,200,000 goal)</div>
       <div class="ring-wrap">
         <svg viewBox="0 0 180 180" width="160" height="160">
@@ -1160,11 +1229,11 @@ body.sheet-open .cpd-bot-cta{
       </div>
       <p class="ring-actual" id="targetActual">RM 0.00 raised</p>
     </div>
-    <div class="revenue-bars">
+    <div class="revenue-bars revenue-mobile-only">
       <div class="revenue-bars-label">Revenue per participant, by programme</div>
       <div id="revPerPartBarList"></div>
     </div>
-    <div class="revenue-bars">
+    <div class="revenue-bars revenue-mobile-only">
       <div class="revenue-bars-label">Self- vs company-sponsored participants</div>
       <div class="ring-wrap">
         <svg viewBox="0 0 180 180" width="160" height="160">
@@ -1181,6 +1250,58 @@ body.sheet-open .cpd-bot-cta{
         <span><span class="split-swatch" style="background:var(--voltage-yellow);"></span>Company-sponsored (<span id="splitCompanyCount">0</span>)</span>
       </div>
     </div>
+
+    <!-- Desktop / landscape-tablet (>=1024px): unified table + summary rail,
+         replacing the 4 stacked cards above so this section fits one
+         laptop screen. Populated by the same loadRevenueSummary() call. -->
+    <div class="revenue-desktop">
+      <div class="revenue-desktop-layout">
+        <div class="revenue-bars">
+          <div class="revenue-bars-label">By programme</div>
+          <table class="rev-table">
+            <thead>
+              <tr><th>Programme</th><th>Revenue</th><th>RM / participant</th><th>Sponsor split</th></tr>
+            </thead>
+            <tbody id="revTableBody"></tbody>
+          </table>
+          <p class="revenue-footnote" id="revFootnoteDesktop"></p>
+        </div>
+        <div class="revenue-rail">
+          <div class="revenue-bars rail-card">
+            <div class="revenue-bars-label">Target vs actual</div>
+            <div class="ring-wrap">
+              <svg viewBox="0 0 180 180" width="110" height="110">
+                <circle cx="90" cy="90" r="70" fill="none" stroke="var(--mist-gray)" stroke-width="18"/>
+                <circle cx="90" cy="90" r="70" fill="none" stroke="var(--mint-chip)" stroke-width="18"
+                  id="gaugeRingRail" stroke-dasharray="439.8" stroke-dashoffset="439.8"
+                  stroke-linecap="round" transform="rotate(-90 90 90)"/>
+                <text x="90" y="84" text-anchor="middle" class="ring-value" font-size="22" fill="var(--carbon-black)" id="gaugePercentRail">0%</text>
+                <text x="90" y="102" text-anchor="middle" class="ring-caption" font-size="9">of RM 1.2M</text>
+              </svg>
+            </div>
+            <p class="ring-actual" id="targetActualRail">RM 0.00 raised</p>
+          </div>
+          <div class="revenue-bars rail-card">
+            <div class="revenue-bars-label">Sponsor totals</div>
+            <div class="ring-wrap">
+              <svg viewBox="0 0 180 180" width="110" height="110">
+                <circle cx="90" cy="90" r="70" fill="none" stroke="var(--voltage-yellow)" stroke-width="20"/>
+                <circle cx="90" cy="90" r="70" fill="none" stroke="var(--mint-chip)" stroke-width="20"
+                  id="donutSelfArcRail" stroke-dasharray="0 439.8"
+                  transform="rotate(-90 90 90)"/>
+                <text x="90" y="84" text-anchor="middle" class="ring-value" font-size="20" fill="var(--carbon-black)" id="donutTotalRail">0</text>
+                <text x="90" y="102" text-anchor="middle" class="ring-caption" font-size="9">participants</text>
+              </svg>
+            </div>
+            <div class="split-legend rail-legend">
+              <span><span class="split-swatch" style="background:var(--mint-chip);"></span>Self (<span id="splitSelfCountRail">0</span>)</span>
+              <span><span class="split-swatch" style="background:var(--voltage-yellow);"></span>Company (<span id="splitCompanyCountRail">0</span>)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <p class="prog-status" id="revStatus">Loading revenue data…</p>
   </div>
 
@@ -1556,6 +1677,17 @@ const donutTotalEl = document.getElementById('donutTotal');
 const splitSelfCountEl = document.getElementById('splitSelfCount');
 const splitCompanyCountEl = document.getElementById('splitCompanyCount');
 
+// Desktop / landscape-tablet (>=1024px) — same data, unified table + rail
+const revTableBody = document.getElementById('revTableBody');
+const revFootnoteDesktop = document.getElementById('revFootnoteDesktop');
+const gaugeRingRailEl = document.getElementById('gaugeRingRail');
+const gaugePercentRailEl = document.getElementById('gaugePercentRail');
+const targetActualRailEl = document.getElementById('targetActualRail');
+const donutSelfArcRailEl = document.getElementById('donutSelfArcRail');
+const donutTotalRailEl = document.getElementById('donutTotalRail');
+const splitSelfCountRailEl = document.getElementById('splitSelfCountRail');
+const splitCompanyCountRailEl = document.getElementById('splitCompanyCountRail');
+
 function setRevStatus(msg, isError){
   revStatus.textContent = msg;
   revStatus.classList.toggle('is-error', !!isError);
@@ -1629,26 +1761,31 @@ async function loadRevenueSummary(){
       const amount = parseAmount(rawAmount);
       if(isNaN(amount)) return;
 
+      const rowSelf = selfCol > -1 ? parseAmount(r[selfCol]) : NaN;
+      const rowCompany = companyCol > -1 ? parseAmount(r[companyCol]) : NaN;
+
       if(amount > 0){
-        bars.push({ name, amount });
-        total += amount;
+        const bar = { name, amount };
 
         const headcount = headcountCol > -1 ? parseAmount(r[headcountCol]) : NaN;
         if(!isNaN(headcount) && headcount > 0){
-          perParticipantBars.push({ name, perParticipant: amount / headcount });
+          bar.perParticipant = amount / headcount;
+          perParticipantBars.push({ name, perParticipant: bar.perParticipant });
         }
+
+        if(!isNaN(rowSelf) && !isNaN(rowCompany) && (rowSelf + rowCompany) > 0){
+          bar.selfCount = rowSelf;
+          bar.companyCount = rowCompany;
+        }
+
+        bars.push(bar);
+        total += amount;
       }else{
         zeroNames.push(name);
       }
 
-      if(selfCol > -1){
-        const s = parseAmount(r[selfCol]);
-        if(!isNaN(s)) selfTotal += s;
-      }
-      if(companyCol > -1){
-        const c = parseAmount(r[companyCol]);
-        if(!isNaN(c)) companyTotal += c;
-      }
+      if(!isNaN(rowSelf)) selfTotal += rowSelf;
+      if(!isNaN(rowCompany)) companyTotal += rowCompany;
     });
 
     bars.sort((a,b)=> b.amount - a.amount);
@@ -1670,9 +1807,33 @@ async function loadRevenueSummary(){
       </div>
     `).join('');
 
-    revFootnote.textContent = zeroNames.length
+    revTableBody.innerHTML = bars.map(b => {
+      const pctWidth = max ? (b.amount / max * 100) : 0;
+      const perPartText = b.perParticipant !== undefined ? formatRM(b.perParticipant) : '—';
+      let splitCell = '<span class="split-nodata">—</span>';
+      if(b.selfCount !== undefined){
+        const rowTotal = b.selfCount + b.companyCount;
+        const selfPct = rowTotal ? (b.selfCount / rowTotal * 100) : 0;
+        splitCell = `<div class="split-bar"><div style="width:${selfPct}%;background:var(--mint-chip);"></div><div style="width:${100 - selfPct}%;background:var(--voltage-yellow);"></div></div>`;
+      }
+      return `
+        <tr>
+          <td class="rev-table-name">${b.name}</td>
+          <td class="rev-table-revenue">
+            <div class="rev-table-bar-track"><div class="rev-table-bar-fill" style="width:${pctWidth}%;"></div></div>
+            <span class="rev-table-amount">${formatRM(b.amount)}</span>
+          </td>
+          <td class="rev-table-perpart">${perPartText}</td>
+          <td>${splitCell}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const zeroFootnoteText = zeroNames.length
       ? `${zeroNames.join(', ')} — no revenue recorded yet.`
       : '';
+    revFootnote.textContent = zeroFootnoteText;
+    revFootnoteDesktop.textContent = zeroFootnoteText;
 
     if(flagged.length){
       revFlagCard.style.display = '';
@@ -1687,6 +1848,10 @@ async function loadRevenueSummary(){
     gaugeRingEl.setAttribute('stroke-dashoffset', gaugeOffset.toFixed(1));
     gaugePercentEl.textContent = targetPct.toFixed(1) + '%';
     targetActualEl.textContent = formatRM(total) + ' raised';
+
+    gaugeRingRailEl.setAttribute('stroke-dashoffset', gaugeOffset.toFixed(1));
+    gaugePercentRailEl.textContent = targetPct.toFixed(1) + '%';
+    targetActualRailEl.textContent = formatRM(total) + ' raised';
 
     // Revenue per participant, by programme
     revPerPartBarList.innerHTML = perParticipantBars.map(b => `
@@ -1706,6 +1871,11 @@ async function loadRevenueSummary(){
     donutTotalEl.textContent = sponsorTotal;
     splitSelfCountEl.textContent = selfTotal;
     splitCompanyCountEl.textContent = companyTotal;
+
+    donutSelfArcRailEl.setAttribute('stroke-dasharray', `${selfArcLength.toFixed(1)} ${RING_CIRCUMFERENCE}`);
+    donutTotalRailEl.textContent = sponsorTotal;
+    splitSelfCountRailEl.textContent = selfTotal;
+    splitCompanyCountRailEl.textContent = companyTotal;
 
     setRevStatus(`Updated from the Revenue Summary sheet · ${bars.length} programme${bars.length===1?'':'s'} with revenue.`);
   }catch(err){
